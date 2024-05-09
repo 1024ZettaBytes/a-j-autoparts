@@ -51,7 +51,7 @@ const NavItem = ({ item, level }) => {
     dispatch({ type: MENU_OPEN, id });
     if (matchesSM) dispatch({ type: SET_MENU, opened: false });
   };
-
+console.log(customization.isOpen);
   // active menu item on page load
   useEffect(() => {
     const currentIndex = document.location.pathname
@@ -76,7 +76,7 @@ const NavItem = ({ item, level }) => {
         py: level > 1 ? 1 : 1.25,
         pl: `${level * 24}px`
       }}
-      selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
+      selected={window.location.href.includes(item.id)}
       onClick={() => itemHandler(item.id)}
     >
       <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>

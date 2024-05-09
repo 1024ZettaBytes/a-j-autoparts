@@ -1,5 +1,12 @@
 // assets
-import { IconClipboardList, IconUser, IconCarGarage, IconTool, IconShoppingCart, IconBuildingWarehouse } from '@tabler/icons-react';
+import {
+  IconClipboardList,
+  IconUser,
+  IconCarGarage,
+  IconTool,
+  IconShoppingCart,
+  IconBuildingWarehouse,
+} from "@tabler/icons-react";
 
 // constant
 const icons = {
@@ -8,65 +15,65 @@ const icons = {
   IconUser,
   IconCarGarage,
   IconShoppingCart,
-  IconBuildingWarehouse
+  IconBuildingWarehouse,
 };
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
 
 const menuTaller = {
-  id: 'utilities',
-  title: '',
-  type: 'group',
+  id: "menu",
+  title: "",
+  type: "group",
   children: [
     {
-      id: 'util-typography',
-      title: 'Nuevo servicio',
-      type: 'item',
-      url: '/utils/util-typography',
+      id: "new-service",
+      title: "Nuevo servicio",
+      type: "item",
+      url: "/new-service",
       icon: icons.IconTool,
-      breadcrumbs: false
+      breadcrumbs: false,
     },
     {
-      id: 'util-color',
-      title: 'Servicios',
-      type: 'item',
-      url: '/utils/util-color',
+      id: "services",
+      title: "Servicios",
+      type: "item",
+      url: "/services",
       icon: icons.IconClipboardList,
-      breadcrumbs: false
+      breadcrumbs: false,
     },
     {
-      id: 'util-shadow',
-      title: 'Clientes',
-      type: 'item',
-      url: '/utils/util-shadow',
+      id: "customers",
+      title: "Clientes",
+      type: "item",
+      url: "/customers",
       icon: icons.IconUser,
-      breadcrumbs: false
+      breadcrumbs: false,
     },
     {
-      id: 'util-shadow',
-      title: 'Vehículos',
-      type: 'item',
-      url: '/utils/util-shadow',
+      id: "vehicles",
+      title: "Vehículos",
+      type: "item",
+      url: "/vehicles",
       icon: icons.IconCarGarage,
-      breadcrumbs: false
+      breadcrumbs: false,
     },
     {
-      id: 'util-shadow',
-      title: 'Proveedores',
-      type: 'item',
-      url: '/utils/util-shadow',
+      id: "suppliers",
+      title: "Proveedores",
+      type: "item",
+      url: "/suppliers",
       icon: icons.IconShoppingCart,
-      breadcrumbs: false
+      breadcrumbs: false,
     },
     {
-      id: 'util-shadow',
-      title: 'Inventario',
-      type: 'item',
-      url: '/utils/util-shadow',
+      id: "inventory",
+      title: "Inventario",
+      type: "item",
+      url: "/inventory",
       icon: icons.IconBuildingWarehouse,
-      breadcrumbs: false
+      breadcrumbs: false,
     },
-  ]
+  ],
 };
 
 export default menuTaller;

@@ -3,8 +3,8 @@ const config = {
   // like '/berry-material-react/react/default'
   basename: '',
   defaultPath: '/',
-  fontFamily: `'Roboto', sans-serif`,
-  borderRadius: 12
+  fontFamily: `'Poppins', sans-serif`,
+  borderRadius: 4
 };
 
 export default config;
