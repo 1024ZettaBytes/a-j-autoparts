@@ -1,0 +1,108 @@
+{
+  "name": "aj-autoparts",
+  "version": "3.4.2",
+  "private": true,
+  "main": "electron/main.js",
+  "homepage": ".",
+  "ahutor": "Eduardo Ramírez",
+  "description": "Taller app",
+  "build": {
+    "productName": "A&J-AUTOPARTS",
+    "appId": "com.pinesoft.aj.autoparts",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "dist/",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "icon": "build/icon.png"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.15",
+    "@mui/lab": "^5.0.0-alpha.163",
+    "@mui/material": "^5.15.15",
+    "@mui/system": "^5.15.15",
+    "@mui/utils": "^5.15.14",
+    "@mui/x-date-pickers": "^7.3.1",
+    "@tabler/icons-react": "^2.47.0",
+    "apexcharts": "^3.48.0",
+    "formik": "^2.4.5",
+    "framer-motion": "^11.0.25",
+    "material-ui-popup-state": "^5.1.0",
+    "prop-types": "^15.8.1",
+    "react": "^18.2.0",
+    "react-apexcharts": "^1.4.1",
+    "react-device-detect": "^2.2.3",
+    "react-dom": "^18.2.0",
+    "react-perfect-scrollbar": "^1.5.8",
+    "react-redux": "^9.1.0",
+    "react-router": "6.21.3",
+    "react-router-dom": "6.21.3",
+    "react-scripts": "^5.0.1",
+    "redux": "^5.0.1",
+    "yup": "^1.4.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "start-electron": "concurrently  \"cross-env BROWSER=none PORT=3000 react-scripts start\" \"wait-on http://localhost:3000 && ELECTRON_START_URL=http://localhost:3000 electron .\"",
+    "build:client": "react-scripts build",
+    "build:electron": "npm run build:client && rm -rf build/src build/shared && mkdir build/src && cp -r src/assets/images/icons/icon.png build/ && cp -r electron/. build/electron && cp -r src/shared/. build/src/shared",
+    "build:electron-win": "npm run build:client && rmdir /S /Q build && npm run build:client && mkdir \"build\\src\" && xcopy /S /E \"src\\assets\\images\\icons\\icon.png\" \"build\\\" && xcopy /S /E \"electron\\\"  \"build\\electron\" && xcopy /S /E \"src\\shared\\\"  \"build\\src\\shared\"",
+    "build:electron-w": "rm -rf build/src build/shared && mkdir build/src && robocopy electron build/electron /S & robocopy src/shared build/src/shared /S",
+    "pack:linux": "electron-builder -c.extraMetadata.main=build/electron/main.js --publish never",
+    "pack:mac": "electron-builder --mac -c.extraMetadata.main=build/electron/main.js --publish never",
+    "pack:windows": "electron-builder --win -c.extraMetadata.main=build/electron/main.js --publish never"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-react"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      "defaults",
+      "not IE 11"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/eslint-parser": "^7.24.1",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^29.2.0",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "immutable": "^4.3.5",
+    "prettier": "^3.2.5",
+    "sass": "^1.74.1",
+    "wait-on": "^7.2.0"
+  }
+}
