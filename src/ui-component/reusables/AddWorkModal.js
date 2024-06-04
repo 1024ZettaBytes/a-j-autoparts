@@ -8,63 +8,33 @@ import {
   CardHeader,
   Divider,
   Grid,
-  InputLabel,
   TextField,
-  Typography,
-  Select,
-  FormControl,
-  MenuItem,
-  Autocomplete,
   InputAdornment,
+  Alert,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import PercentIcon from "@mui/icons-material/Percent";
 import { LoadingButton } from "@mui/lab";
+import { saveWork } from "client/api/works";
 function AddWorkModal(props) {
-  const { handleOnClose, open } = props;
+  const { handleOnClose, open, serviceId } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-  const [selectedCity, setSelectedCity] = useState();
-  const [selectedSector, setSelectedSector] = useState();
-  const [citySectors, setCitySectors] = useState([]);
-  const [wasReferred, setWasReferred] = useState(false);
-  const [selectedHowFound, setSelectedHowFound] = useState();
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [referredBy, setReferredBy] = useState();
 
-  function handleSectorSelection(sector) {
-    setSelectedSector(sector);
-  }
-  function handleHowFoundSelection(howFound) {
-    setSelectedHowFound(howFound);
-    setWasReferred(howFound === "referred");
-  }
-  function handleReferredBySelection(referredBy) {
-    setReferredBy(referredBy);
-  }
   async function submitHandler(event) {
     event.preventDefault();
     setIsLoading(true);
     setHasError({ error: false, msg: "" });
-    const result = {};
-    /*const result = await saveCustomer({
-      name: event.target.name.value,
-      cell: event.target.cell.value,
-      email: event.target.email.value,
-      howFound: event.target.howFound.value,
-      referredBy: referredBy,
-      street: event.target.street.value,
-      suburb: event.target.suburb.value,
-      city: selectedCity,
-      sector: selectedSector,
-      residenceRef: event.target.residenceRef.value,
-      nameRef: event.target.nameRef.value,
-      telRef: event.target.telRef.value,
-      maps: event.target.maps.value,
-    });*/
+
+    const result = await saveWork({
+      service: parseInt(serviceId),
+      description: event?.target?.description?.value,
+      basePrice: event?.target?.basePrice?.value,
+      discountPercentage: event?.target?.discountPercentage?.value,
+    });
     setIsLoading(false);
     if (!result.error) {
-      handleSavedCustomer(result.msg);
+      handleSavedWork(result.msg);
     } else {
       handleErrorOnSave(result.msg);
     }
@@ -74,7 +44,7 @@ function AddWorkModal(props) {
     setIsLoading(false);
     handleOnClose(false);
   };
-  const handleSavedCustomer = (successMessage) => {
+  const handleSavedWork = (successMessage) => {
     handleOnClose(true, successMessage);
   };
 
@@ -97,21 +67,28 @@ function AddWorkModal(props) {
                 <TextField
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="description"
+                  name="description"
                   label="Trabajo realizado"
                   fullWidth={true}
+                  inputProps={{
+                    maxLength: 255,
+                  }}
                 />
               </Grid>
               <Grid item>
                 <TextField
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="basePrice"
+                  name="basePrice"
                   type="number"
                   label="Precio base"
                   InputProps={{
+                    inputProps: {
+                      min: 0,
+                      step: 0.01,
+                    },
                     startAdornment: (
                       <InputAdornment position="start">
                         <AttachMoneyOutlinedIcon />
@@ -122,17 +99,34 @@ function AddWorkModal(props) {
               </Grid>
               <Grid item>
                 <TextField
-                  fullWidth={true}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="discountPercentage"
+                  name="discountPercentage"
                   defaultValue={0}
                   type="number"
+                  InputProps={{
+                    inputProps: {
+                      min: 0,
+                      max: 100,
+                      step: 0.1,
+                    },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <PercentIcon />
+                      </InputAdornment>
+                    ),
+                  }}
                   label="Descuento (%)"
                 />
               </Grid>
-
+              {hasError.error ? (
+                <Grid item lg={4}>
+                  <Alert sx={{ maxWidth: "250px" }} severity="error">
+                    {hasError?.msg}
+                  </Alert>
+                </Grid>
+              ) : null}
               <Grid item lg={12}>
                 <Grid
                   container

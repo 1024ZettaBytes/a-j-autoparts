@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -8,68 +9,30 @@ import {
   CardHeader,
   Divider,
   Grid,
-  InputLabel,
   TextField,
-  Typography,
-  Select,
-  FormControl,
-  MenuItem,
-  Autocomplete,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 
 import { LoadingButton } from "@mui/lab";
+import { saveProduct } from "client/api/inventory";
 function AddProductModal(props) {
-  const { handleOnClose, open, citiesList, customerList } = props;
+  const { handleOnClose, open, serviceId } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-  const [selectedCity, setSelectedCity] = useState();
-  const [selectedSector, setSelectedSector] = useState();
-  const [citySectors, setCitySectors] = useState([]);
-  const [wasReferred, setWasReferred] = useState(false);
-  const [selectedHowFound, setSelectedHowFound] = useState();
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [referredBy, setReferredBy] = useState();
 
-  function handleCitySelection(city) {
-    setSelectedCity(city);
-    setSelectedSector(undefined);
-    const filteredCity = citiesList.filter((c) => c._id === city);
-    setCitySectors(filteredCity[0].sectors);
-  }
-  function handleSectorSelection(sector) {
-    setSelectedSector(sector);
-  }
-  function handleHowFoundSelection(howFound) {
-    setSelectedHowFound(howFound);
-    setWasReferred(howFound === "referred");
-  }
-  function handleReferredBySelection(referredBy) {
-    setReferredBy(referredBy);
-  }
   async function submitHandler(event) {
     event.preventDefault();
     setIsLoading(true);
     setHasError({ error: false, msg: "" });
-    const result = {};
-    /*const result = await saveCustomer({
-      name: event.target.name.value,
-      cell: event.target.cell.value,
-      email: event.target.email.value,
-      howFound: event.target.howFound.value,
-      referredBy: referredBy,
-      street: event.target.street.value,
-      suburb: event.target.suburb.value,
-      city: selectedCity,
-      sector: selectedSector,
-      residenceRef: event.target.residenceRef.value,
-      nameRef: event.target.nameRef.value,
-      telRef: event.target.telRef.value,
-      maps: event.target.maps.value,
-    });*/
+
+    const result = await saveProduct({
+      code: event?.target?.code?.value,
+      name: event?.target?.name?.value,
+      stock: parseInt(event?.target?.stock?.value),
+      min: parseInt(event?.target?.min?.value),
+    });
     setIsLoading(false);
     if (!result.error) {
-      handleSavedCustomer(result.msg);
+      handleSaved(result.msg);
     } else {
       handleErrorOnSave(result.msg);
     }
@@ -79,14 +42,8 @@ function AddProductModal(props) {
     setIsLoading(false);
     handleOnClose(false);
   };
-  const handleSavedCustomer = (successMessage) => {
+  const handleSaved = (successMessage) => {
     handleOnClose(true, successMessage);
-  };
-  const handleCustomerSelect = (selected) => {
-    const found = customerList.filter(
-      (c) => c._id.toString() === selected?.id
-    )[0];
-    setSelectedCustomer(found);
   };
 
   const handleErrorOnSave = (msg) => {
@@ -103,43 +60,66 @@ function AddProductModal(props) {
             <Grid container direction="column" spacing={2} maxWidth="lg">
               <Grid item>
                 <TextField
+                  inputProps={{
+                    maxLength: 20,
+                  }}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="code"
+                  name="code"
                   label="Código"
                 />
               </Grid>
               <Grid item>
                 <TextField
+                  inputProps={{
+                    maxLength: 255,
+                  }}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="name"
+                  name="name"
                   label="Nombre"
                   fullWidth={true}
                 />
               </Grid>
               <Grid item>
                 <TextField
+                  InputProps={{
+                    inputProps: {
+                      min: 0,
+                    },
+                  }}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="stock"
+                  name="stock"
                   type="number"
                   label="Stock actual"
                 />
               </Grid>
               <Grid item>
                 <TextField
+                  InputProps={{
+                    inputProps: {
+                      min: 0,
+                    },
+                  }}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="min"
+                  name="min"
                   type="number"
                   label="Mínimo"
                 />
               </Grid>
+              {hasError.error && (
+                <Grid item lg={4}>
+                  <Alert sx={{ maxWidth: "250px" }} severity="error">
+                    {hasError?.msg}
+                  </Alert>
+                </Grid>
+              )}
               <Grid item lg={12}>
                 <Grid
                   container

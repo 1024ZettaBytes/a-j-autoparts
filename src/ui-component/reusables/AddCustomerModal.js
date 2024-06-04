@@ -14,59 +14,31 @@ import {
   Select,
   FormControl,
   MenuItem,
-  Autocomplete,
+  Skeleton,
+  Alert,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { getFetcher, useGetCustomerTypes } from "client/api/useRequest";
 
 import { LoadingButton } from "@mui/lab";
+import { saveCustomer } from "client/api/customers";
 function AddCustomerModal(props) {
-  const { handleOnClose, open, citiesList, customerList } = props;
+  const { handleOnClose, open } = props;
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-  const [selectedCity, setSelectedCity] = useState();
-  const [selectedSector, setSelectedSector] = useState();
-  const [citySectors, setCitySectors] = useState([]);
-  const [wasReferred, setWasReferred] = useState(false);
-  const [selectedHowFound, setSelectedHowFound] = useState();
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [referredBy, setReferredBy] = useState();
+  const { isLoadingTypes, typesList } = useGetCustomerTypes(getFetcher, true);
 
-  function handleCitySelection(city) {
-    setSelectedCity(city);
-    setSelectedSector(undefined);
-    const filteredCity = citiesList.filter((c) => c._id === city);
-    setCitySectors(filteredCity[0].sectors);
-  }
-  function handleSectorSelection(sector) {
-    setSelectedSector(sector);
-  }
-  function handleHowFoundSelection(howFound) {
-    setSelectedHowFound(howFound);
-    setWasReferred(howFound === "referred");
-  }
-  function handleReferredBySelection(referredBy) {
-    setReferredBy(referredBy);
-  }
   async function submitHandler(event) {
     event.preventDefault();
     setIsLoading(true);
     setHasError({ error: false, msg: "" });
-    const result = {};
-    /*const result = await saveCustomer({
-      name: event.target.name.value,
-      cell: event.target.cell.value,
-      email: event.target.email.value,
-      howFound: event.target.howFound.value,
-      referredBy: referredBy,
-      street: event.target.street.value,
-      suburb: event.target.suburb.value,
-      city: selectedCity,
-      sector: selectedSector,
-      residenceRef: event.target.residenceRef.value,
-      nameRef: event.target.nameRef.value,
-      telRef: event.target.telRef.value,
-      maps: event.target.maps.value,
-    });*/
+
+    const result = await saveCustomer({
+      type: event?.target?.type?.value,
+      name: event?.target?.name?.value,
+      phone: event?.target?.phone?.value,
+      email: event?.target?.email?.value,
+    });
     setIsLoading(false);
     if (!result.error) {
       handleSavedCustomer(result.msg);
@@ -81,12 +53,6 @@ function AddCustomerModal(props) {
   };
   const handleSavedCustomer = (successMessage) => {
     handleOnClose(true, successMessage);
-  };
-  const handleCustomerSelect = (selected) => {
-    const found = customerList.filter(
-      (c) => c._id.toString() === selected?.id
-    )[0];
-    setSelectedCustomer(found);
   };
 
   const handleErrorOnSave = (msg) => {
@@ -113,40 +79,39 @@ function AddCustomerModal(props) {
                 </Typography>
               </Grid>
               <Grid item lg={12} md={12} sm={12} xs={12}>
-                <FormControl sx={{width:"50%"}}>
-                  <InputLabel id="machine-id">Tipo*</InputLabel>
-                  <Select
-                    fullWidth={true}
-                    labelId="machine-id"
-                    label="Tipo*"
-                    id="newMachine"
-                    name="newMachine"
-                    required
-                    defaultValue=""
-                  >
-                    {
-                      //machinesData
-                      true
-                        ? [
-                            { _id: "xd", machineNum: "Individual" },
-                            { _id: "xd2", machineNum: "Empresarial" },
-                          ].map((machine) => (
-                            <MenuItem key={machine._id} value={machine._id}>
-                              {machine.machineNum}
+                {isLoadingTypes ? (
+                  <Skeleton variant="rectangular" width={210} height={60} />
+                ) : (
+                  <FormControl sx={{ width: "50%" }}>
+                    <InputLabel id="machine-id">Tipo*</InputLabel>
+                    <Select
+                      fullWidth={true}
+                      labelId="type-id"
+                      label="Tipo*"
+                      id="type"
+                      name="type"
+                      value={selectedType || ""}
+                      onChange={(event) => setSelectedType(event.target.value)}
+                      required
+                    >
+                      {typesList
+                        ? typesList?.map((type) => (
+                            <MenuItem key={type.id} value={type.id}>
+                              {type.description}
                             </MenuItem>
                           ))
-                        : null
-                    }
-                  </Select>
-                </FormControl>
+                        : null}
+                    </Select>
+                  </FormControl>
+                )}
               </Grid>
 
               <Grid item>
                 <TextField
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="name"
+                  name="name"
                   label="Nombre"
                   fullWidth={true}
                 />
@@ -156,8 +121,8 @@ function AddCustomerModal(props) {
                   fullWidth={true}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="phone"
+                  name="phone"
                   label="Teléfono"
                 />
               </Grid>
@@ -172,7 +137,12 @@ function AddCustomerModal(props) {
                   label="Correo"
                 />
               </Grid>
-
+              {hasError.error ? (
+                <Grid item>
+                  <br />
+                  <Alert severity="error">{hasError?.msg}</Alert>
+                </Grid>
+              ) : null}
               <Grid item lg={12}>
                 <Grid
                   container

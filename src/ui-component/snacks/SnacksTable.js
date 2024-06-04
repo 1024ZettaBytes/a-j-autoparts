@@ -76,7 +76,7 @@ export default function SnacksTable({ showSearch }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {rows && rows.map((row) => (
               <TableRow
                 key={row.name}
                 selected={row.isSelected}

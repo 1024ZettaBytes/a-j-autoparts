@@ -51,7 +51,6 @@ const NavItem = ({ item, level }) => {
     dispatch({ type: MENU_OPEN, id });
     if (matchesSM) dispatch({ type: SET_MENU, opened: false });
   };
-console.log(customization.isOpen);
   // active menu item on page load
   useEffect(() => {
     const currentIndex = document.location.pathname

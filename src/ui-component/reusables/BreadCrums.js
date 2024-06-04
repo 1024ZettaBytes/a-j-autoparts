@@ -15,7 +15,6 @@ const getUrlPaths = (paths) => {
       );
     }
   }
-  console.log(pathsArray);
   return pathsArray;
 };
 export default function NextBreadcrumbs({ paths, lastLoaded, sx }) {

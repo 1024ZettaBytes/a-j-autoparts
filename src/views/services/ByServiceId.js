@@ -1,8 +1,17 @@
 import { LoadingButton } from "@mui/lab";
-import { Button, Grid, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Grid,
+  Skeleton,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { getFetcher, useGetServiceById } from "client/api/useRequest";
+import { useSnackbar } from "notistack";
 import { useState } from "react";
 import { useParams } from "react-router";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import MainCard from "ui-component/cards/MainCard";
 import AddUsedProductModal from "ui-component/reusables/AddUsedProductModal";
 import AddWorkModal from "ui-component/reusables/AddWorkModal";
@@ -11,7 +20,6 @@ import ServiceActionModal from "ui-component/reusables/ServiceActionModal";
 import { getStatusLabel } from "ui-component/services/ServicesTable";
 import SnacksTable from "ui-component/snacks/SnacksTable";
 import WorksTable from "ui-component/works/WorksTable";
-import { PATH } from "shared/const";
 const getSubHeader = (text, fullWidth = false, marginTop = 2) => {
   return (
     <Grid marginTop={marginTop} item lg={fullWidth ? 12 : 2}>
@@ -21,135 +29,220 @@ const getSubHeader = (text, fullWidth = false, marginTop = 2) => {
 };
 export default function ByServiceId() {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const paths = [
     { path: "", text: "Inicio" },
     { path: "services", text: "Servicios" },
   ];
   const { id } = useParams();
-  const [workModalIsOpen, setWorkModalIsOpen] = useState(false);
-  const [productModalIsOpen, setProductModalIsOpen] = useState(false);
+  const [recordModalIsOpen, setRecordModalIsOpen] = useState(false);
+  const [modalType, setModalType] = useState("");
   const [serviceModalIsOpen, setServiceModalIsOpen] = useState(false);
   const [currentAction, setCurrentAction] = useState(null);
-  const data = {
-    status: "IN_PROGRESS",
-    customer: "Eduardo Ramírez",
-    vehicle: "Nissan Sentra 2023",
-  };
+  const { serviceData, serviceError, isLoadingService } = useGetServiceById(
+    getFetcher,
+    id,
+    true
+  );
+  const { year, make, model } = serviceData?.vehicle_service_vehicleTovehicle
+    ?.vehicles_db || { year: 0, make: "", model: "" };
   paths.push({ path: id, text: id });
+  const handleCloseRecordModal = (addedRecord, successMessage = null) => {
+    setRecordModalIsOpen(false);
+    if (addedRecord && successMessage) {
+      enqueueSnackbar(successMessage, {
+        variant: "success",
+        anchorOrigin: {
+          vertical: "top",
+          horizontal: "center",
+        },
+        autoHideDuration: 1500,
+      });
+    }
+  };
   return (
     <>
       {" "}
       <NextBreadcrumbs sx={{ margin: 1 }} paths={paths} lastLoaded={true} />
       <MainCard title={`Servicio: #${id}`} titleSx={{ textAlign: "center" }}>
-        <Grid
-          container
-          direction="row"
-          justifyContent="left"
-          alignItems="left"
-          spacing={1}
-        >
-          {getSubHeader("Estado", true)}
-
-          <Grid item>{getStatusLabel(data.status)}</Grid>
-          {getSubHeader("Cliente", true)}
+        {serviceError ? (
           <Grid item>
-            <TextField
-              disabled
-              id="filled-basic"
-              variant="outlined"
-              value={data.customer}
-            />
+            <br />
+            <Alert severity="error">{serviceError.message}</Alert>
           </Grid>
-          {getSubHeader("Vehículo", true)}
-          <Grid item>
-            <TextField
-              disabled
-              id="filled-basic"
-              variant="outlined"
-              value={data.vehicle}
-            />
-          </Grid>
-          {getSubHeader("Trabajos realizados", true, 6)}
-          <Grid item container lg={8}>
-            <Grid item>
-              <WorksTable />
-            </Grid>
-          </Grid>
-          <Grid item textAlign="end" lg={8}>
-            <Button
-              sx={{ display: "inline" }}
-              variant="contained"
-              color="secondary"
-              onClick={() => {
-                setWorkModalIsOpen(true);
-              }}
+        ) : (
+          <>
+            <Grid
+              container
+              direction="row"
+              justifyContent="left"
+              alignItems="left"
+              spacing={1}
             >
-              Agregar
-            </Button>
-          </Grid>
-          {getSubHeader("Refacciones", true, 4)}
-          <Grid item container lg={10}>
-            <Grid item lg={12}>
-              <SnacksTable />
-            </Grid>
-          </Grid>
-          <Grid item textAlign="end" lg={10}>
-            <Button
-              sx={{ display: "inline" }}
-              variant="contained"
-              color="secondary"
-              onClick={() => {
-                setProductModalIsOpen(true);
-              }}
-            >
-              Agregar
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid item xs={12} sm={12} md={12} textAlign={"center"} marginTop={10}>
-          <Button
-            variant="outlined"
-            size="medium"
-            color="error"
-            onClick={() => {
-              setCurrentAction("CANCEL");
-              setServiceModalIsOpen(true);
-            }}
-          >
-            Cancelar Servicio
-          </Button>
+              {getSubHeader("Estado", true)}
+              {isLoadingService ? (
+                <Grid item lg={2}>
+                  <Skeleton variant="rounded" height={50} />
+                </Grid>
+              ) : (
+                <Grid item>{getStatusLabel(serviceData?.status)}</Grid>
+              )}
+              {getSubHeader("Cliente", true)}
+              <Grid item lg={3}>
+                {isLoadingService ? (
+                  <Skeleton variant="rounded" height={50} />
+                ) : (
+                  <TextField
+                    disabled
+                    id="filled-basic"
+                    variant="outlined"
+                    value={
+                      serviceData?.vehicle_service_vehicleTovehicle
+                        ?.customer_vehicle_customerTocustomer?.name
+                    }
+                  />
+                )}
+              </Grid>
+              {getSubHeader("Vehículo", true)}
+              <Grid item lg={3}>
+                {isLoadingService ? (
+                  <Skeleton variant="rounded" height={50} />
+                ) : (
+                  <TextField
+                    disabled
+                    id="filled-basic"
+                    variant="outlined"
+                    value={`${make} ${model} ${year}`}
+                  />
+                )}
+              </Grid>
+              {getSubHeader("Trabajos realizados", true, 6)}
+              <Grid item container lg={8}>
+                {isLoadingService ? (
+                  <Grid item lg={12}>
+                    <Skeleton variant="rounded" height={200} />
+                  </Grid>
+                ) : (
+                  <>
+                    {serviceData?.work_work_serviceToservice?.length === 0 ? (
+                      <Typography
+                        textAlign="center"
+                        fontStyle={"italic"}
+                        width="100%"
+                      >
+                        Aún no hay trabajos agregados
+                      </Typography>
+                    ) : (
+                      <Grid item>
+                        <WorksTable
+                          rows={serviceData?.work_work_serviceToservice}
+                          total={serviceData?.workTotal}
+                        />
+                      </Grid>
+                    )}
+                    <Grid item textAlign="end" lg={12}>
+                      <Button
+                        sx={{ display: "inline" }}
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => {
+                          setModalType("WORK");
+                          setRecordModalIsOpen(true);
+                        }}
+                      >
+                        Agregar
+                      </Button>
+                    </Grid>
+                  </>
+                )}
+              </Grid>
 
-          <LoadingButton
-            sx={{ marginLeft: 1 }}
-            type="submit"
-            size="medium"
-            loading={false}
-            variant="contained"
-            color="success"
-            onClick={() => {
-              setCurrentAction("FINISH");
-              setServiceModalIsOpen(true);
-            }}
-          >
-            Finalizar
-          </LoadingButton>
-        </Grid>
+              {getSubHeader("Refacciones", true, 4)}
+              <Grid item container lg={10}>
+                {isLoadingService ? (
+                  <Grid item lg={12}>
+                    <Skeleton variant="rounded" height={200} />
+                  </Grid>
+                ) : (
+                  <>
+                    {serviceData?.used_product_used_product_serviceToservice
+                      ?.length === 0 ? (
+                      <Typography
+                        textAlign="center"
+                        fontStyle={"italic"}
+                        width="100%"
+                      >
+                        Aún no hay refacciones agregadas
+                      </Typography>
+                    ) : (
+                      <Grid item>
+                        <SnacksTable />
+                      </Grid>
+                    )}
+                    <Grid item textAlign="end" lg={10}>
+                      <Button
+                        sx={{ display: "inline" }}
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => {
+                          setModalType("PRODUCT");
+                          setRecordModalIsOpen(true);
+                        }}
+                      >
+                        Agregar
+                      </Button>
+                    </Grid>
+                  </>
+                )}
+              </Grid>
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              sm={12}
+              md={12}
+              textAlign={"center"}
+              marginTop={10}
+            >
+              <Button
+                variant="outlined"
+                size="medium"
+                color="error"
+                onClick={() => {
+                  setCurrentAction("CANCEL");
+                  setServiceModalIsOpen(true);
+                }}
+              >
+                Cancelar Servicio
+              </Button>
+
+              <LoadingButton
+                sx={{ marginLeft: 1 }}
+                type="submit"
+                size="medium"
+                loading={false}
+                variant="contained"
+                color="success"
+                onClick={() => {
+                  setCurrentAction("FINISH");
+                  setServiceModalIsOpen(true);
+                }}
+              >
+                Finalizar
+              </LoadingButton>
+            </Grid>
+          </>
+        )}
       </MainCard>
-      {workModalIsOpen && (
+      {recordModalIsOpen && modalType === "WORK" && (
         <AddWorkModal
-          handleOnClose={() => {
-            setWorkModalIsOpen(false);
-          }}
+          handleOnClose={handleCloseRecordModal}
+          serviceId={id}
           open
         />
       )}
-      {productModalIsOpen && (
-        <AddUsedProductModal
-          handleOnClose={() => {
-            setProductModalIsOpen(false);
-          }}
-          open
-        />
+      {recordModalIsOpen && modalType === "PRODUCT" && (
+        <AddUsedProductModal handleOnClose={handleCloseRecordModal} open />
       )}
       {serviceModalIsOpen && currentAction === "CANCEL" && (
         <ServiceActionModal
@@ -177,8 +270,8 @@ export default function ByServiceId() {
           }}
           onAccept={() => {
             setServiceModalIsOpen(false);
-           //window.location.href = `${PATH}/#/vehicles/87`;
-           navigate('/vehicles/87'); // Target path
+            //window.location.href = `${PATH}/#/vehicles/87`;
+            navigate("/vehicles/87"); // Target path
           }}
         />
       )}

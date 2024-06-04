@@ -14,8 +14,10 @@ import {
   Divider,
   IconButton,
   InputAdornment,
+  TablePagination,
   TextField,
   Tooltip,
+  Typography,
   useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -24,6 +26,7 @@ import DoNotDisturbOnOutlinedIcon from "@mui/icons-material/DoNotDisturbOnOutlin
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export const getStatusLabel = (status) => {
   switch (status) {
@@ -56,8 +59,28 @@ export const getStatusLabel = (status) => {
       );
   }
 };
-export default function ServicesTable({ rows, showSearch }) {
+export default function ServicesTable({
+  rows,
+  showSearch,
+  searchTerm,
+  onSearchTerm,
+}) {
   const theme = useTheme();
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [term, setTerm] = useState(searchTerm);
+
+  const applyPagination = (rowList, page, limit) => {
+    return rowList.slice(page * limit, page * limit + limit);
+  };
+  const handlePageChange = (_event, newPage) => {
+    setPage(newPage);
+  };
+  const handleLimitChange = (event) => {
+    setLimit(parseInt(event.target.value));
+  };
+  const paginatedRows = applyPagination(rows, page, limit);
+
   return (
     <Card>
       <CardHeader
@@ -67,9 +90,19 @@ export default function ServicesTable({ rows, showSearch }) {
               <>
                 <TextField
                   size="small"
-                  id="input-search-customer"
+                  id="input-search"
                   label="Buscar"
-                  onChange={() => {}}
+                  helperText="Escriba y presione ENTER"
+                  value={term || ""}
+                  onChange={(event) => {
+                    setTerm(event.target.value);
+                  }}
+                  onKeyDown={(ev) => {
+                    if (ev.key === "Enter") {
+                      ev.preventDefault();
+                      onSearchTerm(term);
+                    }
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -121,13 +154,22 @@ export default function ServicesTable({ rows, showSearch }) {
                 <TableCell component="th" scope="row">
                   {getStatusLabel(row.status)}
                 </TableCell>
-                <TableCell align="center">{row.customer}</TableCell>
-                <TableCell align="center">{row.vehicle}</TableCell>
+                <TableCell align="center">
+                  {
+                    row.vehicle_service_vehicleTovehicle
+                      ?.customer_vehicle_customerTocustomer?.name
+                  }
+                </TableCell>
+                <TableCell align="center">
+                  {row.vehicle_service_vehicleTovehicle?.vehicles_db?.model +
+                    "-" +
+                    row.vehicle_service_vehicleTovehicle?.vehicles_db?.year}
+                </TableCell>
                 <TableCell align="center">{row.billed}</TableCell>
-                <TableCell align="center">{row.date}</TableCell>
+                <TableCell align="center">{row.startDate}</TableCell>
                 <TableCell align="center">
                   <Tooltip title="Detalle" arrow>
-                    <Link to={"56"}>
+                    <Link to={`${row.id}`}>
                       <IconButton
                         sx={{
                           "&:hover": {
@@ -148,6 +190,26 @@ export default function ServicesTable({ rows, showSearch }) {
           </TableBody>
         </Table>
       </TableContainer>
+      {paginatedRows?.length === 0 && (
+        <Typography variant="h3" margin={2} color="#FD5B5B" textAlign="center">
+          No se encontraron registros
+        </Typography>
+      )}
+      <Box p={2}>
+        <TablePagination
+          labelRowsPerPage="# de resultados"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}–${to} de ${count !== -1 ? count : `más de ${to}`}`
+          }
+          component="div"
+          count={paginatedRows.length}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleLimitChange}
+          page={page}
+          rowsPerPage={limit}
+          rowsPerPageOptions={[5, 10, 25, 30]}
+        />
+      </Box>
     </Card>
   );
 }

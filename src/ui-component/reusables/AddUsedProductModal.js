@@ -8,63 +8,32 @@ import {
   CardHeader,
   Divider,
   Grid,
-  InputLabel,
   TextField,
-  Typography,
-  Select,
-  FormControl,
-  MenuItem,
   Autocomplete,
   InputAdornment,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import { LoadingButton } from "@mui/lab";
+import { saveWork } from "client/api/works";
 function AddUsedProductModal(props) {
-  const { handleOnClose, open } = props;
+  const { handleOnClose, open, serviceId } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-  const [selectedCity, setSelectedCity] = useState();
-  const [selectedSector, setSelectedSector] = useState();
-  const [citySectors, setCitySectors] = useState([]);
-  const [wasReferred, setWasReferred] = useState(false);
-  const [selectedHowFound, setSelectedHowFound] = useState();
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [referredBy, setReferredBy] = useState();
 
-  function handleSectorSelection(sector) {
-    setSelectedSector(sector);
-  }
-  function handleHowFoundSelection(howFound) {
-    setSelectedHowFound(howFound);
-    setWasReferred(howFound === "referred");
-  }
-  function handleReferredBySelection(referredBy) {
-    setReferredBy(referredBy);
-  }
   async function submitHandler(event) {
     event.preventDefault();
     setIsLoading(true);
     setHasError({ error: false, msg: "" });
-    const result = {};
-    /*const result = await saveCustomer({
-      name: event.target.name.value,
-      cell: event.target.cell.value,
-      email: event.target.email.value,
-      howFound: event.target.howFound.value,
-      referredBy: referredBy,
-      street: event.target.street.value,
-      suburb: event.target.suburb.value,
-      city: selectedCity,
-      sector: selectedSector,
-      residenceRef: event.target.residenceRef.value,
-      nameRef: event.target.nameRef.value,
-      telRef: event.target.telRef.value,
-      maps: event.target.maps.value,
-    });*/
+
+    const result = await saveWork({
+      service: parseInt(serviceId),
+      description: event?.target?.description?.value,
+      basePrice: event?.target?.basePrice?.value,
+      discountPercentage: event?.target?.discountPercentage?.value,
+    });
     setIsLoading(false);
     if (!result.error) {
-      handleSavedCustomer(result.msg);
+      handleSavedWork(result.msg);
     } else {
       handleErrorOnSave(result.msg);
     }
@@ -74,7 +43,7 @@ function AddUsedProductModal(props) {
     setIsLoading(false);
     handleOnClose(false);
   };
-  const handleSavedCustomer = (successMessage) => {
+  const handleSavedWork = (successMessage) => {
     handleOnClose(true, successMessage);
   };
 

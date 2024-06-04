@@ -1,4 +1,6 @@
 import * as React from "react";
+import { useState } from "react";
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,10 +13,13 @@ import {
   Card,
   CardHeader,
   Divider,
+  Grid,
   IconButton,
   InputAdornment,
+  TablePagination,
   TextField,
   Tooltip,
+  Typography,
   useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -22,8 +27,29 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { Link } from "react-router-dom";
 
-export default function VehiclesTable({ rows, showSearch, whitDetail }) {
+export default function VehiclesTable({
+  rows,
+  showSearch,
+  whitDetail,
+  onSelectRow,
+  selectedRow,
+  searchTerm,
+  onSearchTerm,
+}) {
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [term, setTerm] = useState(searchTerm);
+  const applyPagination = (rowList, page, limit) => {
+    return rowList.slice(page * limit, page * limit + limit);
+  };
+  const handlePageChange = (_event, newPage) => {
+    setPage(newPage);
+  };
+  const handleLimitChange = (event) => {
+    setLimit(parseInt(event.target.value));
+  };
   const theme = useTheme();
+  const paginatedRows = applyPagination(rows, page, limit);
   return (
     <Card>
       <CardHeader
@@ -33,9 +59,19 @@ export default function VehiclesTable({ rows, showSearch, whitDetail }) {
               <>
                 <TextField
                   size="small"
-                  id="input-search-customer"
+                  id="input-search"
                   label="Buscar"
-                  onChange={() => {}}
+                  helperText="Escriba y presione ENTER"
+                  value={term || ""}
+                  onChange={(event) => {
+                    setTerm(event.target.value);
+                  }}
+                  onKeyDown={(ev) => {
+                    if (ev.key === "Enter") {
+                      ev.preventDefault();
+                      onSearchTerm(term);
+                    }
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -72,10 +108,10 @@ export default function VehiclesTable({ rows, showSearch, whitDetail }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows?.map((row) => (
+            {paginatedRows?.map((row) => (
               <TableRow
-                key={row.name}
-                selected={row.isSelected}
+                key={row.VIN}
+                selected={selectedRow ? selectedRow.VIN === row.VIN : false}
                 sx={{
                   "&.MuiTableRow-root:hover": {
                     backgroundColor: theme.palette.primary.light,
@@ -86,15 +122,22 @@ export default function VehiclesTable({ rows, showSearch, whitDetail }) {
 
                   cursor: "pointer",
                 }}
+                onClick={() => {
+                  if (onSelectRow) {
+                    onSelectRow(row);
+                  }
+                }}
               >
                 <TableCell component="th" scope="row">
-                  {row.serie}
+                  {row.VIN}
                 </TableCell>
-                <TableCell align="center">{row.plate}</TableCell>
-                <TableCell align="center">{row.customer}</TableCell>
-                <TableCell align="center">{row.brand}</TableCell>
-                <TableCell align="center">{row.model}</TableCell>
-                <TableCell align="center">{row.year}</TableCell>
+                <TableCell align="center">{row.plates}</TableCell>
+                <TableCell align="center">
+                  {row.customer_vehicle_customerTocustomer?.name}
+                </TableCell>
+                <TableCell align="center">{row.vehicles_db?.make}</TableCell>
+                <TableCell align="center">{row.vehicles_db?.model}</TableCell>
+                <TableCell align="center">{row.vehicles_db?.year}</TableCell>
                 {whitDetail && (
                   <TableCell align="center">
                     <Tooltip title="Detalle" arrow>
@@ -120,6 +163,26 @@ export default function VehiclesTable({ rows, showSearch, whitDetail }) {
           </TableBody>
         </Table>
       </TableContainer>
+      {paginatedRows?.length === 0 && (
+        <Typography variant="h3" margin={2} color="#FD5B5B" textAlign="center">
+          No se encontraron registros
+        </Typography>
+      )}
+      <Box p={2}>
+        <TablePagination
+          labelRowsPerPage="# de resultados"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}–${to} de ${count !== -1 ? count : `más de ${to}`}`
+          }
+          component="div"
+          count={paginatedRows.length}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleLimitChange}
+          page={page}
+          rowsPerPage={limit}
+          rowsPerPageOptions={[5, 10, 25, 30]}
+        />
+      </Box>
     </Card>
   );
 }

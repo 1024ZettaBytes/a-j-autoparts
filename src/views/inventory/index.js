@@ -18,6 +18,7 @@ import AddProductModal from "ui-component/reusables/AddProductModal";
 import InventoryEntriesTable from "ui-component/inventory/InventoryEntriesTable";
 import InventoryIssuesTable from "ui-component/inventory/InventoryIssuesTable";
 import AddEntryModal from "ui-component/reusables/AddEntryModal";
+import { enqueueSnackbar } from "notistack";
 
 function Inventory() {
   const tabs = [
@@ -30,14 +31,10 @@ function Inventory() {
   const handleTabsChange = (_event, value) => {
     setCurrentTab(value);
   };
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [modalEntryIsOpen, setModalEntryIsOpen] = useState(false);
-  const handleCloseProduct = () => {
-    setModalIsOpen(false);
-  };
-  const handleCloseEntry = () => {
-    setModalEntryIsOpen(false);
-  };
+  const [modalType, setModalType] = useState(null);
+
   const paths = [
     { path: "", text: "Inicio" },
     { path: "inventory", text: "Inventario" },
@@ -45,12 +42,19 @@ function Inventory() {
   function createData(code, name, stock, min) {
     return { code, name, stock, min };
   }
-
-  const rows = [
-    createData("5W30-1", "Aceite 5w30 1Lt", 1, 10),
-    createData("BAL-DUR-4", "Balata Duralast 4pz", 10, 5),
-    createData("FRE-BAR-350", "Líquido Frenos Bardahl 350ml", 12, 5),
-  ];
+  const handleCloseModal = (addedRecord, successMessage = null) => {
+    setModalIsOpen(false);
+    if (addedRecord && successMessage) {
+      enqueueSnackbar(successMessage, {
+        variant: "success",
+        anchorOrigin: {
+          vertical: "top",
+          horizontal: "center",
+        },
+        autoHideDuration: 1500,
+      });
+    }
+  };
   const entriesRows = [
     {
       code: "FRE-BAR-350",
@@ -93,7 +97,7 @@ function Inventory() {
           {currentTab === "inv" && (
             <>
               <Grid item textAlign="end" lg={12}>
-                <InventoryTable rows={rows} showSearch />
+                <InventoryTable showSearch />
               </Grid>
               <Grid item textAlign="end" lg={12}>
                 <Button
@@ -102,6 +106,7 @@ function Inventory() {
                   variant="contained"
                   sx={{ marginTop: 1 }}
                   onClick={() => {
+                    setModalType("PRODUCT");
                     setModalIsOpen(true);
                   }}
                 >
@@ -123,7 +128,8 @@ function Inventory() {
                   color="secondary"
                   sx={{ marginTop: 1 }}
                   onClick={() => {
-                    setModalEntryIsOpen(true);
+                    setModalType("ENTRY");
+                    setModalIsOpen(true);
                   }}
                 >
                   Registrar Entrada
@@ -138,17 +144,11 @@ function Inventory() {
           )}
         </Grid>
       </MainCard>
-      {modalIsOpen && (
-        <AddProductModal
-          open={modalIsOpen}
-          handleOnClose={handleCloseProduct}
-        />
+      {modalIsOpen && modalType === "PRODUCT" && (
+        <AddProductModal open={modalIsOpen} handleOnClose={handleCloseModal} />
       )}
-      {modalEntryIsOpen && (
-        <AddEntryModal
-          open={modalEntryIsOpen}
-          handleOnClose={handleCloseEntry}
-        />
+      {modalIsOpen && modalType === "ENTRY" && (
+        <AddEntryModal open={modalIsOpen} handleOnClose={handleCloseModal} />
       )}
     </>
   );

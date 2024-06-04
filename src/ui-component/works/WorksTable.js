@@ -6,55 +6,13 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import {
-  Box,
-  Card,
-  CardHeader,
-  Divider,
-  InputAdornment,
-  TextField,
-  Typography,
-  useTheme,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Card, CardHeader, Divider, Typography, useTheme } from "@mui/material";
 
-function createData(work, price, discountPercentage, total) {
-  return { work, price, discountPercentage, total };
-}
-
-const rows = [
-  createData("CAMBIO DE ACEITE", "$500.00", "0%", "$500.00"),
-  createData("CAMBIO DE BALATAS", "$300.00", "0%", "$300.00"),
-  createData("ALINEACION", "$1,500.00", "0%", "$1,500.00"),
-];
-
-export default function WorksTable({ showSearch }) {
+export default function WorksTable({ rows, total }) {
   const theme = useTheme();
   return (
     <Card sx={{ alignItems: "right", textAlign: "right" }}>
       <CardHeader
-        action={
-          showSearch ? (
-            <Box width={200}>
-              <>
-                <TextField
-                  size="small"
-                  id="input-search-customer"
-                  label="Buscar"
-                  onChange={() => {}}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ marginTop: "20px" }}
-                />
-              </>
-            </Box>
-          ) : null
-        }
         sx={{
           display: "flex",
           alignItems: "center",
@@ -75,10 +33,9 @@ export default function WorksTable({ showSearch }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {rows?.map((row) => (
               <TableRow
                 key={row.name}
-                selected={row.isSelected}
                 sx={{
                   "&.MuiTableRow-root:hover": {
                     backgroundColor: theme.palette.primary.light,
@@ -91,9 +48,9 @@ export default function WorksTable({ showSearch }) {
                 }}
               >
                 <TableCell component="th" scope="row">
-                  {row.work}
+                  {row.description}
                 </TableCell>
-                <TableCell align="center">{row.price}</TableCell>
+                <TableCell align="center">{row.basePrice}</TableCell>
                 <TableCell align="center">{row.discountPercentage}</TableCell>
                 <TableCell align="center">{row.total}</TableCell>
               </TableRow>
@@ -110,7 +67,7 @@ export default function WorksTable({ showSearch }) {
         marginRight={4}
         fontWeight="bold"
       >
-        {"$2,300.00"}
+        {total}
       </Typography>
     </Card>
   );
