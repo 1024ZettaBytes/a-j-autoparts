@@ -15,12 +15,15 @@ import themes from "themes";
 
 // project imports
 import NavigationScroll from "layout/NavigationScroll";
+import { useEffect } from "react";
 
 // ==============================|| APP ||============================== //
 
 const App = () => {
+  useEffect(() => {
+    window?.electron?.enableRightClick();
+  }, []);
   const customization = useSelector((state) => state.customization);
-
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={themes(customization)}>

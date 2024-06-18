@@ -35,7 +35,7 @@ export default function WorksTable({ rows, total }) {
           <TableBody>
             {rows?.map((row) => (
               <TableRow
-                key={row.name}
+                key={`${row.id}-${row.service}`}
                 sx={{
                   "&.MuiTableRow-root:hover": {
                     backgroundColor: theme.palette.primary.light,

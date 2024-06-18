@@ -57,7 +57,7 @@ export default function InventoryTable({ showSearch }) {
   const { productsList, productsError, isLoadingProducts } = useGetAllProducts(
     getFetcher,
     term,
-    true
+    false
   );
   const applyPagination = (rowList, page, limit) => {
     return rowList.slice(page * limit, page * limit + limit);
@@ -143,7 +143,7 @@ export default function InventoryTable({ showSearch }) {
               <TableBody>
                 {paginatedRows.map((row) => (
                   <TableRow
-                    key={row.name}
+                    key={row.code}
                     selected={row.isSelected}
                     sx={{
                       "&.MuiTableRow-root:hover": {
@@ -165,24 +165,23 @@ export default function InventoryTable({ showSearch }) {
                   </TableRow>
                 ))}
               </TableBody>
-
-              <Box p={2}>
-                <TablePagination
-                  labelRowsPerPage="# de resultados"
-                  labelDisplayedRows={({ from, to, count }) =>
-                    `${from}–${to} de ${count !== -1 ? count : `más de ${to}`}`
-                  }
-                  component="div"
-                  count={paginatedRows.length}
-                  onPageChange={handlePageChange}
-                  onRowsPerPageChange={handleLimitChange}
-                  page={page}
-                  rowsPerPage={limit}
-                  rowsPerPageOptions={[5, 10, 25, 30]}
-                />
-              </Box>
             </Table>
           </TableContainer>
+          <Box p={2}>
+            <TablePagination
+              labelRowsPerPage="# de resultados"
+              labelDisplayedRows={({ from, to, count }) =>
+                `${from}–${to} de ${count !== -1 ? count : `más de ${to}`}`
+              }
+              component="div"
+              count={paginatedRows.length}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleLimitChange}
+              page={page}
+              rowsPerPage={limit}
+              rowsPerPageOptions={[5, 10, 25, 30]}
+            />
+          </Box>
         </>
       )}
     </Card>

@@ -18,16 +18,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-function createData(code, name, units, unitPrice, discountPercentage, total) {
-  return { code, name, units, unitPrice, discountPercentage, total };
-}
-
-const rows = [
-  createData("BAL", "Balata Duralast 1 pz", "4", "$100.00", "0%", "$400.00"),
-  createData("AC5W30", "Aceite 5w30 1 Lt", "3", "$150.00", "0%", "$450.00"),
-];
-
-export default function SnacksTable({ showSearch }) {
+export default function SnacksTable({ showSearch, rows, total }) {
   const theme = useTheme();
   return (
     <Card sx={{ alignItems: "right", textAlign: "right" }}>
@@ -76,31 +67,31 @@ export default function SnacksTable({ showSearch }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows && rows.map((row) => (
-              <TableRow
-                key={row.name}
-                selected={row.isSelected}
-                sx={{
-                  "&.MuiTableRow-root:hover": {
-                    backgroundColor: theme.palette.primary.light,
-                  },
-                  "&.MuiTableRow-root.Mui-selected": {
-                    backgroundColor: theme.palette.secondary.main,
-                  },
+            {rows &&
+              rows.map((row) => (
+                <TableRow
+                  key={`${row.id}-${row.product}`}
+                  sx={{
+                    "&.MuiTableRow-root:hover": {
+                      backgroundColor: theme.palette.primary.light,
+                    },
+                    "&.MuiTableRow-root.Mui-selected": {
+                      backgroundColor: theme.palette.secondary.main,
+                    },
 
-                  cursor: "pointer",
-                }}
-              >
-                <TableCell component="th" scope="row">
-                  {row.code}
-                </TableCell>
-                <TableCell align="center">{row.name}</TableCell>
-                <TableCell align="center">{row.units}</TableCell>
-                <TableCell align="center">{row.unitPrice}</TableCell>
-                <TableCell align="center">{row.discountPercentage}</TableCell>
-                <TableCell align="center">{row.total}</TableCell>
-              </TableRow>
-            ))}
+                    cursor: "pointer",
+                  }}
+                >
+                  <TableCell component="th" scope="row">
+                    {row.product}
+                  </TableCell>
+                  <TableCell align="center">{row.products?.name}</TableCell>
+                  <TableCell align="center">{row.qty}</TableCell>
+                  <TableCell align="center">{row.unitPrice}</TableCell>
+                  <TableCell align="center">{row.discountPercentage}</TableCell>
+                  <TableCell align="center">{row.total}</TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -113,7 +104,7 @@ export default function SnacksTable({ showSearch }) {
         marginRight={4}
         fontWeight="bold"
       >
-        {"$850.00"}
+        {total}
       </Typography>
     </Card>
   );

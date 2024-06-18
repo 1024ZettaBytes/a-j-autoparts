@@ -41,6 +41,7 @@ function AllServices() {
           )}
           {!servicesError && servicesList && (
             <ServicesTable
+              detailed
               rows={servicesList}
               showSearch
               searchTerm={searchTerm}

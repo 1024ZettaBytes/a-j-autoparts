@@ -8,10 +8,12 @@ import {
   Typography,
 } from "@mui/material";
 import { getFetcher, useGetServiceById } from "client/api/useRequest";
+import { MuiFileInput } from "mui-file-input";
 import { useSnackbar } from "notistack";
 import { useState } from "react";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router-dom";
+import SaveIcon from "@mui/icons-material/Save";
 import MainCard from "ui-component/cards/MainCard";
 import AddUsedProductModal from "ui-component/reusables/AddUsedProductModal";
 import AddWorkModal from "ui-component/reusables/AddWorkModal";
@@ -20,6 +22,9 @@ import ServiceActionModal from "ui-component/reusables/ServiceActionModal";
 import { getStatusLabel } from "ui-component/services/ServicesTable";
 import SnacksTable from "ui-component/snacks/SnacksTable";
 import WorksTable from "ui-component/works/WorksTable";
+import { saveServiceAttachment } from "client/api/services";
+import { currFormat } from "client/utils/formatUtils";
+
 const getSubHeader = (text, fullWidth = false, marginTop = 2) => {
   return (
     <Grid marginTop={marginTop} item lg={fullWidth ? 12 : 2}>
@@ -39,6 +44,12 @@ export default function ByServiceId() {
   const [modalType, setModalType] = useState("");
   const [serviceModalIsOpen, setServiceModalIsOpen] = useState(false);
   const [currentAction, setCurrentAction] = useState(null);
+  const [attached, setAttached] = useState({
+    file: null,
+    url: null,
+    isSaving: false,
+    error: null,
+  });
   const { serviceData, serviceError, isLoadingService } = useGetServiceById(
     getFetcher,
     id,
@@ -47,7 +58,10 @@ export default function ByServiceId() {
   const { year, make, model } = serviceData?.vehicle_service_vehicleTovehicle
     ?.vehicles_db || { year: 0, make: "", model: "" };
   paths.push({ path: id, text: id });
-  const handleCloseRecordModal = (addedRecord, successMessage = null) => {
+  const handleCloseRecordModal = (
+    addedRecord = false,
+    successMessage = null
+  ) => {
     setRecordModalIsOpen(false);
     if (addedRecord && successMessage) {
       enqueueSnackbar(successMessage, {
@@ -60,14 +74,37 @@ export default function ByServiceId() {
       });
     }
   };
+
+  const handleAttachmentSubmit = async () => {
+    setAttached({ ...attached, isSaving: true, error: null });
+    const result = await saveServiceAttachment(attached.file, id);
+    const error = result.error ? result.msg : null;
+    setAttached({ ...attached, isSaving: false, error });
+    if (!error) {
+      handleCloseRecordModal(true, result.msg);
+      setAttached({
+        file: null,
+        url: null,
+        error: null,
+      });
+    }
+  };
+  const hasUsed = serviceData
+    ? serviceData.work_work_serviceToservice?.length > 0 ||
+      serviceData.used_product_used_product_serviceToservice?.length > 0
+    : false;
+  const isInProgress = serviceData?.status === "IN_PROGRESS";
   return (
     <>
       {" "}
-      <NextBreadcrumbs sx={{ margin: 1 }} paths={paths} lastLoaded={true} />
+      <NextBreadcrumbs
+        sx={{ margin: 1 }}
+        paths={paths}
+        lastLoaded={serviceData}
+      />
       <MainCard title={`Servicio: #${id}`} titleSx={{ textAlign: "center" }}>
         {serviceError ? (
           <Grid item>
-            <br />
             <Alert severity="error">{serviceError.message}</Alert>
           </Grid>
         ) : (
@@ -140,25 +177,27 @@ export default function ByServiceId() {
                         />
                       </Grid>
                     )}
-                    <Grid item textAlign="end" lg={12}>
-                      <Button
-                        sx={{ display: "inline" }}
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => {
-                          setModalType("WORK");
-                          setRecordModalIsOpen(true);
-                        }}
-                      >
-                        Agregar
-                      </Button>
-                    </Grid>
+                    {isInProgress && (
+                      <Grid item textAlign="end" lg={10}>
+                        <Button
+                          sx={{ display: "inline" }}
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => {
+                            setModalType("WORK");
+                            setRecordModalIsOpen(true);
+                          }}
+                        >
+                          Agregar
+                        </Button>
+                      </Grid>
+                    )}
                   </>
                 )}
               </Grid>
 
               {getSubHeader("Refacciones", true, 4)}
-              <Grid item container lg={10}>
+              <Grid item container lg={8}>
                 {isLoadingService ? (
                   <Grid item lg={12}>
                     <Skeleton variant="rounded" height={200} />
@@ -176,61 +215,145 @@ export default function ByServiceId() {
                       </Typography>
                     ) : (
                       <Grid item>
-                        <SnacksTable />
+                        <SnacksTable
+                          rows={
+                            serviceData?.used_product_used_product_serviceToservice
+                          }
+                          total={serviceData?.snacksTotal}
+                        />
                       </Grid>
                     )}
-                    <Grid item textAlign="end" lg={10}>
-                      <Button
-                        sx={{ display: "inline" }}
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => {
-                          setModalType("PRODUCT");
-                          setRecordModalIsOpen(true);
-                        }}
+                    {isInProgress && (
+                      <Grid item textAlign="end" lg={10}>
+                        <Button
+                          sx={{ display: "inline" }}
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => {
+                            setModalType("PRODUCT");
+                            setRecordModalIsOpen(true);
+                          }}
+                        >
+                          Agregar
+                        </Button>
+                      </Grid>
+                    )}
+                  </>
+                )}
+              </Grid>
+              {getSubHeader("Fotos", true, 4)}
+              <Grid item container lg={8}>
+                {isLoadingService ? (
+                  <Grid item lg={12}>
+                    <Skeleton variant="rounded" height={200} />
+                  </Grid>
+                ) : (
+                  <>
+                    {serviceData
+                      ?.service_attachment_service_attachment_serviceToservice
+                      ?.length === 0 ? (
+                      <Typography
+                        textAlign="center"
+                        fontStyle={"italic"}
+                        width="100%"
                       >
-                        Agregar
-                      </Button>
+                        No se han agregado imágenes
+                      </Typography>
+                    ) : (
+                      serviceData.service_attachment_service_attachment_serviceToservice.map(
+                        (attachment) => (
+                          <Grid item p={1}>
+                            <img
+                              width="200px"
+                              height="200px"
+                              key={`att-${attachment.id}`}
+                              src={attachment.url}
+                            />
+                          </Grid>
+                        )
+                      )
+                    )}
+                    {attached.error && (
+                      <Grid item lg={8} m={1}>
+                        <Alert severity="error">{attached.error}</Alert>
+                      </Grid>
+                    )}
+                    <Grid item lg={12} />
+                    <Grid item lg={4} m={1}>
+                      <MuiFileInput
+                        sx={{ cursor: "pointer" }}
+                        required
+                        inputProps={{ accept: "image/*" }}
+                        placeholder={"+ Agregar"}
+                        value={attached?.file}
+                        onChange={(file) => {
+                          const url = file ? URL.createObjectURL(file) : null;
+                          setAttached({
+                            ...attached,
+                            file,
+                            url,
+                          });
+                        }}
+                      />
                     </Grid>
+                    {attached.file && (
+                      <Grid item lg={3} marginTop={2}>
+                        <LoadingButton
+                          startIcon={<SaveIcon />}
+                          variant="contained"
+                          color="info"
+                          loading={attached.isSaving}
+                          onClick={handleAttachmentSubmit}
+                        >
+                          Guardar
+                        </LoadingButton>
+                      </Grid>
+                    )}
                   </>
                 )}
               </Grid>
             </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={12}
-              md={12}
-              textAlign={"center"}
-              marginTop={10}
-            >
-              <Button
-                variant="outlined"
-                size="medium"
-                color="error"
-                onClick={() => {
-                  setCurrentAction("CANCEL");
-                  setServiceModalIsOpen(true);
-                }}
-              >
-                Cancelar Servicio
-              </Button>
+            {serviceData && isInProgress && (
+              <>
+                <Grid
+                  item
+                  xs={12}
+                  sm={12}
+                  md={12}
+                  textAlign={"center"}
+                  marginTop={10}
+                >
+                  <Button
+                    disabled={hasUsed}
+                    variant="outlined"
+                    size="medium"
+                    color="error"
+                    onClick={() => {
+                      setCurrentAction("CANCEL");
+                      setServiceModalIsOpen(true);
+                    }}
+                  >
+                    Cancelar Servicio
+                  </Button>
 
-              <LoadingButton
-                sx={{ marginLeft: 1 }}
-                type="submit"
-                size="medium"
-                loading={false}
-                variant="contained"
-                color="success"
-                onClick={() => {
-                  setCurrentAction("FINISH");
-                  setServiceModalIsOpen(true);
-                }}
-              >
-                Finalizar
-              </LoadingButton>
-            </Grid>
+                  <LoadingButton
+                    sx={{ marginLeft: 1 }}
+                    disabled={!hasUsed}
+                    type="submit"
+                    size="medium"
+                    loading={false}
+                    variant="contained"
+                    color="success"
+                    onClick={() => {
+                      setCurrentAction("FINISH");
+                      setServiceModalIsOpen(true);
+                    }}
+                  >
+                    Finalizar
+                  </LoadingButton>
+                </Grid>
+              </>
+            )}
           </>
         )}
       </MainCard>
@@ -242,17 +365,24 @@ export default function ByServiceId() {
         />
       )}
       {recordModalIsOpen && modalType === "PRODUCT" && (
-        <AddUsedProductModal handleOnClose={handleCloseRecordModal} open />
+        <AddUsedProductModal
+          handleOnClose={handleCloseRecordModal}
+          serviceId={id}
+          open
+        />
       )}
       {serviceModalIsOpen && currentAction === "CANCEL" && (
         <ServiceActionModal
           open
+          serviceId={id}
+          requiredInput
           title="Cancelar servicio"
           inputLabel="Razón de cancelación"
           text="Se cancelará el servicio del vehículo Sentra - Eduardo Ramírez"
-          isLoading={false}
           type="CANCEL"
-          onCancel={() => {
+          onClose={handleCloseRecordModal}
+          onSuccess={(addedRecord, message) => {
+            handleCloseRecordModal(addedRecord, message);
             setServiceModalIsOpen(false);
           }}
         />
@@ -260,18 +390,20 @@ export default function ByServiceId() {
       {serviceModalIsOpen && currentAction === "FINISH" && (
         <ServiceActionModal
           open
+          serviceId={id}
           title="Finalizar servicio"
           inputLabel="Comentarios adicionales"
-          text="Se marcará el servicio como completado con un total de cobro de $2, 500.00"
-          isLoading={false}
+          text={`Se marcará el servicio como completado con un total de cobro de ${currFormat.format(
+            serviceData.workTotal + serviceData.snacksTotal
+          )}`}
           type="DONE"
-          onCancel={() => {
+          onClose={handleCloseRecordModal}
+          onSuccess={(addedRecord, message) => {
+            handleCloseRecordModal(addedRecord, message);
             setServiceModalIsOpen(false);
-          }}
-          onAccept={() => {
-            setServiceModalIsOpen(false);
-            //window.location.href = `${PATH}/#/vehicles/87`;
-            navigate("/vehicles/87"); // Target path
+            navigate(
+              `/vehicles/${serviceData?.vehicle_service_vehicleTovehicle?.VIN}`
+            );
           }}
         />
       )}

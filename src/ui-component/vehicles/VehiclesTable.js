@@ -30,7 +30,7 @@ import { Link } from "react-router-dom";
 export default function VehiclesTable({
   rows,
   showSearch,
-  whitDetail,
+  withDetail,
   onSelectRow,
   selectedRow,
   searchTerm,
@@ -104,7 +104,7 @@ export default function VehiclesTable({
               <TableCell align="center">Marca</TableCell>
               <TableCell align="center">Modelo</TableCell>
               <TableCell align="center">Año</TableCell>
-              {whitDetail && <TableCell align="center"></TableCell>}
+              {withDetail && <TableCell align="center"></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -138,10 +138,10 @@ export default function VehiclesTable({
                 <TableCell align="center">{row.vehicles_db?.make}</TableCell>
                 <TableCell align="center">{row.vehicles_db?.model}</TableCell>
                 <TableCell align="center">{row.vehicles_db?.year}</TableCell>
-                {whitDetail && (
+                {withDetail && (
                   <TableCell align="center">
                     <Tooltip title="Detalle" arrow>
-                      <Link to={"56"}>
+                      <Link to={`${row.VIN}`}>
                         <IconButton
                           sx={{
                             "&:hover": {

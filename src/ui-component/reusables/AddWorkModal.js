@@ -120,13 +120,13 @@ function AddWorkModal(props) {
                   label="Descuento (%)"
                 />
               </Grid>
-              {hasError.error ? (
+              {hasError.error && (
                 <Grid item lg={4}>
                   <Alert sx={{ maxWidth: "250px" }} severity="error">
                     {hasError?.msg}
                   </Alert>
                 </Grid>
-              ) : null}
+              )}
               <Grid item lg={12}>
                 <Grid
                   container

@@ -45,9 +45,15 @@ export const useGetCustomerTypes = (fetcher, noRefresh = false) => {
   };
 };
 
-export const useGetAllCustomers = (fetcher, noRefresh = false) => {
+export const useGetAllCustomers = (
+  fetcher,
+  searchTerm = null,
+  noRefresh = false
+) => {
+  const search =
+    searchTerm && searchTerm !== "" ? `?searchTerm=${searchTerm.trim()}` : "";
   const { data, error, isLoading } = useSWR(
-    API_ROUTES.ALL_CUSTOMERS_API,
+    API_ROUTES.ALL_CUSTOMERS_API + search,
     fetcher,
     noRefresh ? noRefreshOptions : {}
   );
@@ -58,9 +64,15 @@ export const useGetAllCustomers = (fetcher, noRefresh = false) => {
   };
 };
 
-export const useGetAllCustomersNonDetail = (fetcher, noRefresh = false) => {
+export const useGetAllCustomersNonDetail = (
+  fetcher,
+  searchTerm = null,
+  noRefresh = false
+) => {
+  const search =
+    searchTerm && searchTerm !== "" ? `?searchTerm=${searchTerm.trim()}` : "";
   const { data, error, isLoading } = useSWR(
-    API_ROUTES.ALL_CUSTOMERS_NON_DETAIL_API,
+    API_ROUTES.ALL_CUSTOMERS_NON_DETAIL_API + search,
     fetcher,
     noRefresh ? noRefreshOptions : {}
   );
@@ -68,6 +80,18 @@ export const useGetAllCustomersNonDetail = (fetcher, noRefresh = false) => {
     customersList: data?.data,
     customersError: error,
     isLoadingCustomers: isLoading,
+  };
+};
+export const useGetCustomerById = (fetcher, customerId, noRefresh = false) => {
+  const { data, error, isLoading } = useSWR(
+    API_ROUTES.CUSTOMER_BY_ID_API.replace(":id", customerId),
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
+  );
+  return {
+    customerData: data?.data,
+    customerError: error,
+    isLoadingCustomer: isLoading,
   };
 };
 
@@ -123,14 +147,19 @@ export const useGetVehiclesCatalog = (
     isLoadingModels: isLoading,
   };
 };
-
-export const useGetCustomerById = (fetcher, id) => {
-  const { data, error } = useSWR(
-    id ? API_ROUTES.CUSTOMER_BY_ID_API.replace(":id", id) : null,
-    fetcher
+export const useGetVehicleById = (fetcher, VIN, noRefresh = false) => {
+  const { data, error, isLoading } = useSWR(
+    API_ROUTES.VEHICLE_BY_ID.replace(":id", VIN),
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
   );
-  return { customer: data?.data, customerByIdError: error };
+  return {
+    vehicleData: data?.data,
+    vehicleError: error,
+    isLoadingVehicle: isLoading,
+  };
 };
+
 // Services
 export const useGetAllServices = (
   fetcher,
@@ -192,12 +221,50 @@ export const useGetAllWorks = (
     isLoadingServices: isLoading,
   };
 };
-// Inventory
-export const useGetAllProducts = (
+// Suppliers
+export const useGetAllSuppliers = (
   fetcher,
   searchTerm,
+  nondetail = false,
   noRefresh = false
 ) => {
+  const search =
+    searchTerm && searchTerm !== "" ? `searchTerm=${searchTerm.trim()}` : "";
+  const url =
+    API_ROUTES.ALL_SUPPLIERS_API +
+    (nondetail
+      ? search !== ""
+        ? `?nondetail=true&${search}`
+        : "?nondetail=true"
+      : search !== ""
+      ? `?${search}`
+      : "");
+  const { data, error, isLoading } = useSWR(
+    url,
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
+  );
+  return {
+    suppliersList: data?.data,
+    suppliersError: error,
+    isLoadingSuppliers: isLoading,
+  };
+};
+
+export const useGetSupplierById = (fetcher, supplierId, noRefresh = false) => {
+  const { data, error, isLoading } = useSWR(
+    `${API_ROUTES.ALL_SUPPLIERS_API}/${supplierId}`,
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
+  );
+  return {
+    supplierData: data?.data,
+    supplierError: error,
+    isLoadingSupplier: isLoading,
+  };
+};
+// Inventory
+export const useGetAllProducts = (fetcher, searchTerm, noRefresh = false) => {
   const search =
     searchTerm && searchTerm !== "" ? `?searchTerm=${searchTerm.trim()}` : "";
 
@@ -210,5 +277,45 @@ export const useGetAllProducts = (
     productsList: data?.data,
     productsError: error,
     isLoadingProducts: isLoading,
+  };
+};
+
+export const useGetAllProductEntries = (
+  fetcher,
+  searchTerm,
+  noRefresh = false
+) => {
+  const search =
+    searchTerm && searchTerm !== "" ? `?searchTerm=${searchTerm.trim()}` : "";
+
+  const { data, error, isLoading } = useSWR(
+    API_ROUTES.ALL_INVENTORY_ENTRIES_API + search,
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
+  );
+  return {
+    entriesList: data?.data,
+    entriesError: error,
+    isLoadingEntries: isLoading,
+  };
+};
+
+export const useGetAllProductIssues = (
+  fetcher,
+  searchTerm,
+  noRefresh = false
+) => {
+  const search =
+    searchTerm && searchTerm !== "" ? `?searchTerm=${searchTerm.trim()}` : "";
+
+  const { data, error, isLoading } = useSWR(
+    API_ROUTES.ALL_INVENTORY_ISSUES_API + search,
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
+  );
+  return {
+    issuesList: data?.data,
+    issuesError: error,
+    isLoadingIssues: isLoading,
   };
 };

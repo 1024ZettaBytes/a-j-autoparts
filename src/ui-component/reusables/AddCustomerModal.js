@@ -113,6 +113,9 @@ function AddCustomerModal(props) {
                   id="name"
                   name="name"
                   label="Nombre"
+                  inputProps={{
+                    maxLength: 255,
+                  }}
                   fullWidth={true}
                 />
               </Grid>
@@ -124,6 +127,9 @@ function AddCustomerModal(props) {
                   id="phone"
                   name="phone"
                   label="Teléfono"
+                  inputProps={{
+                    maxLength: 13,
+                  }}
                 />
               </Grid>
               <Grid item>
@@ -134,6 +140,9 @@ function AddCustomerModal(props) {
                   id="email"
                   name="email"
                   type="email"
+                  inputProps={{
+                    maxLength: 255,
+                  }}
                   label="Correo"
                 />
               </Grid>

@@ -39,9 +39,6 @@ function Inventory() {
     { path: "", text: "Inicio" },
     { path: "inventory", text: "Inventario" },
   ];
-  function createData(code, name, stock, min) {
-    return { code, name, stock, min };
-  }
   const handleCloseModal = (addedRecord, successMessage = null) => {
     setModalIsOpen(false);
     if (addedRecord && successMessage) {
@@ -55,16 +52,7 @@ function Inventory() {
       });
     }
   };
-  const entriesRows = [
-    {
-      code: "FRE-BAR-350",
-      name: "Líquido Frenos Bardahl 350ml",
-      qty: 3,
-      spent: "$450.00",
-      supplier: "Auto Zone 1",
-      date: "05/05/2024",
-    },
-  ];
+ 
   const issuesRows = [
     {
       code: "FRE-BAR-350",
@@ -118,7 +106,7 @@ function Inventory() {
           {currentTab === "ent" && (
             <>
               <Grid item lg={12}>
-                <InventoryEntriesTable rows={entriesRows} showSearch />
+                <InventoryEntriesTable showSearch />
               </Grid>
               <Grid item textAlign="end" lg={12}>
                 <Button

@@ -32,12 +32,12 @@ import { saveVehicle } from "client/api/vehicles";
 function AddVehicleModal(props) {
   const { enqueueSnackbar } = useSnackbar();
 
-  const { handleOnClose, open } = props;
+  const { handleOnClose, open, defaultCustomer } = props;
   const { customersList, customersError, isLoadingCustomers } =
     useGetAllCustomersNonDetail(getFetcher);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(defaultCustomer);
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedMake, setSelectedMake] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
@@ -88,6 +88,7 @@ function AddVehicleModal(props) {
       handleErrorOnSave(result.msg);
     }
   }
+
   const handleCloseCustomer = (addedCustomer, successMessage = null) => {
     setModalIsOpen(false);
     if (addedCustomer && successMessage) {
@@ -139,7 +140,11 @@ function AddVehicleModal(props) {
                           height={60}
                         />
                       ) : customersList?.length === 0 ? (
-                        <Typography color="darkorange" marginTop={2} fontStyle="italic">
+                        <Typography
+                          color="darkorange"
+                          marginTop={2}
+                          fontStyle="italic"
+                        >
                           Aun no hay clientes registrados
                         </Typography>
                       ) : (
@@ -324,6 +329,9 @@ function AddVehicleModal(props) {
                     id="engine"
                     name="engine"
                     label="Motor"
+                    inputProps={{
+                      maxLength: 15,
+                    }}
                   />
                 </Grid>
                 <Grid item>
@@ -334,6 +342,9 @@ function AddVehicleModal(props) {
                     id="vin"
                     name="vin"
                     label="VIN"
+                    inputProps={{
+                      maxLength: 18,
+                    }}
                   />
                 </Grid>
                 <Grid item>
@@ -344,6 +355,9 @@ function AddVehicleModal(props) {
                     id="plates"
                     name="plates"
                     label="Placas"
+                    inputProps={{
+                      maxLength: 15,
+                    }}
                   />
                 </Grid>
                 <Grid item>
@@ -354,6 +368,9 @@ function AddVehicleModal(props) {
                     id="color"
                     name="color"
                     label="Color"
+                    inputProps={{
+                      maxLength: 30,
+                    }}
                   />
                 </Grid>
                 {hasError.error ? (

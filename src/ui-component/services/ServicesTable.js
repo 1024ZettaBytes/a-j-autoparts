@@ -64,6 +64,7 @@ export default function ServicesTable({
   showSearch,
   searchTerm,
   onSearchTerm,
+  detailed = false,
 }) {
   const theme = useTheme();
   const [page, setPage] = useState(0);
@@ -130,8 +131,12 @@ export default function ServicesTable({
           <TableHead>
             <TableRow>
               <TableCell>Estado</TableCell>
-              <TableCell align="center">Cliente</TableCell>
-              <TableCell align="center">Vehiculo</TableCell>
+              {detailed && (
+                <>
+                  <TableCell align="center">Cliente</TableCell>
+                  <TableCell align="center">Vehiculo</TableCell>
+                </>
+              )}
               <TableCell align="center">Cobrado</TableCell>
               <TableCell align="center">Fecha</TableCell>
               <TableCell align="center"></TableCell>
@@ -154,22 +159,27 @@ export default function ServicesTable({
                 <TableCell component="th" scope="row">
                   {getStatusLabel(row.status)}
                 </TableCell>
-                <TableCell align="center">
-                  {
-                    row.vehicle_service_vehicleTovehicle
-                      ?.customer_vehicle_customerTocustomer?.name
-                  }
-                </TableCell>
-                <TableCell align="center">
-                  {row.vehicle_service_vehicleTovehicle?.vehicles_db?.model +
-                    "-" +
-                    row.vehicle_service_vehicleTovehicle?.vehicles_db?.year}
-                </TableCell>
+                {detailed && (
+                  <>
+                    <TableCell align="center">
+                      {
+                        row.vehicle_service_vehicleTovehicle
+                          ?.customer_vehicle_customerTocustomer?.name
+                      }
+                    </TableCell>
+                    <TableCell align="center">
+                      {row.vehicle_service_vehicleTovehicle?.vehicles_db
+                        ?.model +
+                        "-" +
+                        row.vehicle_service_vehicleTovehicle?.vehicles_db?.year}
+                    </TableCell>
+                  </>
+                )}
                 <TableCell align="center">{row.billed}</TableCell>
                 <TableCell align="center">{row.startDate}</TableCell>
                 <TableCell align="center">
                   <Tooltip title="Detalle" arrow>
-                    <Link to={`${row.id}`}>
+                    <Link to={`../../services/${row.id}`}>
                       <IconButton
                         sx={{
                           "&:hover": {

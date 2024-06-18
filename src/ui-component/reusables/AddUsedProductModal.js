@@ -11,24 +11,35 @@ import {
   TextField,
   Autocomplete,
   InputAdornment,
+  Typography,
+  Skeleton,
+  Alert,
 } from "@mui/material";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import PercentIcon from "@mui/icons-material/Percent";
+
 import { LoadingButton } from "@mui/lab";
-import { saveWork } from "client/api/works";
+import { getFetcher, useGetAllProducts } from "client/api/useRequest";
+import { saveUsedProduct } from "client/api/usedProducts";
 function AddUsedProductModal(props) {
   const { handleOnClose, open, serviceId } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const { productsList, productsError, isLoadingProducts } = useGetAllProducts(
+    getFetcher,
+    null
+  );
   async function submitHandler(event) {
     event.preventDefault();
     setIsLoading(true);
     setHasError({ error: false, msg: "" });
 
-    const result = await saveWork({
+    const result = await saveUsedProduct({
       service: parseInt(serviceId),
-      description: event?.target?.description?.value,
-      basePrice: event?.target?.basePrice?.value,
+      product: selectedProduct.id,
+      qty: parseInt(event?.target?.qty?.value),
+      unitPrice: event?.target?.unitPrice?.value,
       discountPercentage: event?.target?.discountPercentage?.value,
     });
     setIsLoading(false);
@@ -63,41 +74,78 @@ function AddUsedProductModal(props) {
           <Box component="form" onSubmit={submitHandler}>
             <Grid container direction="column" spacing={2} maxWidth="lg">
               <Grid item>
-                <Autocomplete
-                  fullWidth
-                  id="combo-box-demo"
-                  options={[
-                    {
-                      id: "1",
-                      label: "(AC5W30)" + "Aceite 5w30 1 Lt",
-                    },
-                  ]}
-                  sx={{ width: 300 }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Pieza/Refacción" />
-                  )}
-                />
+                {productsError ? (
+                  <Typography color="red" marginTop={2} fontStyle="italic">
+                    {productsError.message}
+                  </Typography>
+                ) : isLoadingProducts ? (
+                  <Skeleton variant="rectangular" width={300} height={60} />
+                ) : productsList?.length === 0 ? (
+                  <Typography
+                    color="darkorange"
+                    marginTop={2}
+                    fontStyle="italic"
+                  >
+                    Aun no hay productos registrados
+                  </Typography>
+                ) : (
+                  <Autocomplete
+                    fullWidth
+                    id="product"
+                    options={productsList.map((product) => {
+                      return {
+                        label: ` (${product.code}) ${product.name} [${product.stock}]`,
+                        id: product.code,
+                        stock: product.stock,
+                        isDisabled: product.stock <= 0,
+                      };
+                    })}
+                    getOptionDisabled={(option) => {
+                      return option.isDisabled;
+                    }}
+                    onChange={(event, newValue) => {
+                      setSelectedProduct(newValue);
+                    }}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    sx={{ width: 300 }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Pieza/Refacción" />
+                    )}
+                  />
+                )}
               </Grid>
               <Grid item>
                 <TextField
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="qty"
+                  name="qty"
                   defaultValue={0}
                   type="number"
-                  label="Cantidad" 
+                  label="Cantidad"
+                  InputProps={{
+                    inputProps: {
+                      min: 0,
+                      max: selectedProduct?.stock ?? 0,
+                    },
+                  }}
                 />
               </Grid>
               <Grid item>
                 <TextField
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="unitPrice"
+                  name="unitPrice"
                   type="number"
                   label="Precio unitario"
                   InputProps={{
+                    inputProps: {
+                      min: 0,
+                      step: 0.01,
+                    },
                     startAdornment: (
                       <InputAdornment position="start">
                         <AttachMoneyOutlinedIcon />
@@ -110,14 +158,32 @@ function AddUsedProductModal(props) {
                 <TextField
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="discountPercentage"
+                  name="discountPercentage"
                   defaultValue={0}
                   type="number"
                   label="Descuento (%)"
+                  InputProps={{
+                    inputProps: {
+                      min: 0,
+                      max: 100,
+                      step: 0.1,
+                    },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <PercentIcon />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
-
+              {hasError.error && (
+                <Grid item lg={4}>
+                  <Alert sx={{ maxWidth: "300px" }} severity="error">
+                    {hasError?.msg}
+                  </Alert>
+                </Grid>
+              )}
               <Grid item lg={12}>
                 <Grid
                   container
@@ -137,6 +203,7 @@ function AddUsedProductModal(props) {
                   </Grid>
                   <Grid item>
                     <LoadingButton
+                      disabled={!selectedProduct}
                       type="submit"
                       loading={isLoading}
                       size="large"

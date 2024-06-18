@@ -8,87 +8,70 @@ import {
   CardHeader,
   Divider,
   Grid,
-  InputLabel,
   TextField,
   Typography,
-  Select,
-  FormControl,
-  MenuItem,
   Autocomplete,
   InputAdornment,
+  Skeleton,
+  Alert,
 } from "@mui/material";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 
 import { LoadingButton } from "@mui/lab";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
+import {
+  getFetcher,
+  useGetAllProducts,
+  useGetAllSuppliers,
+} from "client/api/useRequest";
+import { saveProductEntry } from "client/api/inventory";
 function AddEntryModal(props) {
-  const { handleOnClose, open, citiesList, customerList } = props;
-  const [isLoading, setIsLoading] = useState(false);
+  const { handleOnClose, open } = props;
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [hasError, setHasError] = useState({ error: false, msg: "" });
-  const [selectedCity, setSelectedCity] = useState();
-  const [selectedSector, setSelectedSector] = useState();
-  const [citySectors, setCitySectors] = useState([]);
-  const [wasReferred, setWasReferred] = useState(false);
-  const [selectedHowFound, setSelectedHowFound] = useState();
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [referredBy, setReferredBy] = useState();
+  const { productsList, productsError, isLoadingProducts } = useGetAllProducts(
+    getFetcher,
+    null,
+    true
+  );
 
-  function handleCitySelection(city) {
-    setSelectedCity(city);
-    setSelectedSector(undefined);
-    const filteredCity = citiesList.filter((c) => c._id === city);
-    setCitySectors(filteredCity[0].sectors);
-  }
-  function handleSectorSelection(sector) {
-    setSelectedSector(sector);
-  }
-  function handleHowFoundSelection(howFound) {
-    setSelectedHowFound(howFound);
-    setWasReferred(howFound === "referred");
-  }
-  function handleReferredBySelection(referredBy) {
-    setReferredBy(referredBy);
-  }
+  const onChangeDate = (value) => {
+    if (value?.toString() === "Invalid Date") {
+      value = null;
+    }
+    setSelectedDate(value);
+  };
+
+  const { suppliersList, suppliersError, isLoadingSuppliers } =
+    useGetAllSuppliers(getFetcher, null, true, true);
   async function submitHandler(event) {
     event.preventDefault();
-    setIsLoading(true);
+    setIsSaving(true);
     setHasError({ error: false, msg: "" });
-    const result = {};
-    /*const result = await saveCustomer({
-      name: event.target.name.value,
-      cell: event.target.cell.value,
-      email: event.target.email.value,
-      howFound: event.target.howFound.value,
-      referredBy: referredBy,
-      street: event.target.street.value,
-      suburb: event.target.suburb.value,
-      city: selectedCity,
-      sector: selectedSector,
-      residenceRef: event.target.residenceRef.value,
-      nameRef: event.target.nameRef.value,
-      telRef: event.target.telRef.value,
-      maps: event.target.maps.value,
-    });*/
-    setIsLoading(false);
+    const result = await saveProductEntry({
+      product: selectedProduct?.id,
+      supplier: selectedSupplier?.id,
+      date: selectedDate,
+      qty: event?.target?.qty?.value,
+      cost: event?.target?.cost?.value,
+    });
+    setIsSaving(false);
     if (!result.error) {
-      handleSavedCustomer(result.msg);
+      handleSaved(result.msg);
     } else {
       handleErrorOnSave(result.msg);
     }
   }
   const handleClose = () => {
     setHasError({ error: false, msg: "" });
-    setIsLoading(false);
+    setIsSaving(false);
     handleOnClose(false);
   };
-  const handleSavedCustomer = (successMessage) => {
+  const handleSaved = (successMessage) => {
     handleOnClose(true, successMessage);
-  };
-  const handleCustomerSelect = (selected) => {
-    const found = customerList.filter(
-      (c) => c._id.toString() === selected?.id
-    )[0];
-    setSelectedCustomer(found);
   };
 
   const handleErrorOnSave = (msg) => {
@@ -104,44 +87,59 @@ function AddEntryModal(props) {
           <Box component="form" onSubmit={submitHandler}>
             <Grid container direction="column" spacing={2} maxWidth="lg">
               <Grid item lg={12} md={12} sm={12} xs={12}>
-                <FormControl sx={{ width: "100%" }}>
-                  <InputLabel id="machine-id">Producto*</InputLabel>
-                  <Select
-                    fullWidth={true}
-                    labelId="machine-id"
-                    label="Producto*"
-                    id="newMachine"
-                    name="newMachine"
-                    required
-                    defaultValue=""
+                {productsError ? (
+                  <Typography color="red" marginTop={2} fontStyle="italic">
+                    {productsError.message}
+                  </Typography>
+                ) : isLoadingProducts ? (
+                  <Skeleton variant="rectangular" width={210} height={60} />
+                ) : productsList?.length === 0 ? (
+                  <Typography
+                    color="darkorange"
+                    marginTop={2}
+                    fontStyle="italic"
                   >
-                    {
-                      //machinesData
-                      true
-                        ? [
-                            { _id: "xd", machineNum: "Balata Duralast 4pz" },
-                            { _id: "xd2", machineNum: "Aceite 5w30 1Lt" },
-                          ].map((machine) => (
-                            <MenuItem key={machine._id} value={machine._id}>
-                              {machine.machineNum}
-                            </MenuItem>
-                          ))
-                        : null
+                    Aun no hay productos registrados
+                  </Typography>
+                ) : (
+                  <Autocomplete
+                    disablePortal
+                    id="supplier"
+                    name="supplier"
+                    options={productsList.map((product) => {
+                      return {
+                        label: ` (${product.code}) ${product.name}`,
+                        id: product.code,
+                      };
+                    })}
+                    onChange={(event, newValue) => {
+                      setSelectedProduct(newValue);
+                    }}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
                     }
-                  </Select>
-                </FormControl>
+                    renderInput={(params) => (
+                      <TextField
+                        fullWidth={true}
+                        required
+                        {...params}
+                        label="Producto"
+                      />
+                    )}
+                  />
+                )}
               </Grid>
               <Grid item>
                 <DesktopDatePicker
                   sx={{ width: "70%" }}
+                  id="date"
+                  name="date"
                   label="Fecha"
                   inputFormat="dd/MM/yyyy"
                   maxDate={new Date()}
-                  value={new Date()}
-                  onChange={(newValue) => {
-                    //onChangeTime("date",newValue);
-                  }}
-                  renderInput={(params) => <TextField {...params} />}
+                  value={selectedDate}
+                  onChange={onChangeDate}
+                  slotProps={{ textField: { variant: "outlined" } }}
                 />
               </Grid>
               <Grid item>
@@ -149,9 +147,14 @@ function AddEntryModal(props) {
                   sx={{ width: "50%" }}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="qty"
+                  name="qty"
                   type="number"
+                  InputProps={{
+                    inputProps: {
+                      min: 1,
+                    },
+                  }}
                   label="Cantidad"
                 />
               </Grid>
@@ -160,11 +163,15 @@ function AddEntryModal(props) {
                   sx={{ width: "50%" }}
                   autoComplete="off"
                   required
-                  id="email"
-                  name="email"
+                  id="cost"
+                  name="cost"
                   type="number"
                   label="Precio de compra"
                   InputProps={{
+                    inputProps: {
+                      min: 0,
+                      step: 0.01,
+                    },
                     startAdornment: (
                       <InputAdornment position="start">
                         <AttachMoneyOutlinedIcon />
@@ -174,32 +181,56 @@ function AddEntryModal(props) {
                 />
               </Grid>
               <Grid item lg={12} md={12} sm={12} xs={12}>
-                <FormControl sx={{ width: "100%" }}>
-                  <InputLabel id="machine-id">Proveedor*</InputLabel>
-                  <Select
-                    fullWidth={true}
-                    labelId="machine-id"
-                    label="Proveedor*"
-                    id="newMachine"
-                    name="newMachine"
-                    required
-                    defaultValue=""
+                {suppliersError ? (
+                  <Typography color="red" marginTop={2} fontStyle="italic">
+                    {suppliersError.message}
+                  </Typography>
+                ) : isLoadingSuppliers ? (
+                  <Skeleton variant="rectangular" width={210} height={60} />
+                ) : suppliersList?.length === 0 ? (
+                  <Typography
+                    color="darkorange"
+                    marginTop={2}
+                    fontStyle="italic"
                   >
-                    {
-                      //machinesData
-                      true
-                        ? [
-                            { _id: "xd", machineNum: "Auto Zone 1" },
-                          ].map((machine) => (
-                            <MenuItem key={machine._id} value={machine._id}>
-                              {machine.machineNum}
-                            </MenuItem>
-                          ))
-                        : null
+                    Aun no hay proveedores registrados
+                  </Typography>
+                ) : (
+                  <Autocomplete
+                    disablePortal
+                    id="supplier"
+                    name="supplier"
+                    options={suppliersList.map((supp) => {
+                      return {
+                        label: ` (${supp.id}) ${supp.name}`,
+                        id: supp.id,
+                      };
+                    })}
+                    onChange={(event, newValue) => {
+                      setSelectedSupplier(newValue);
+                    }}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
                     }
-                  </Select>
-                </FormControl>
+                    renderInput={(params) => (
+                      <TextField
+                        fullWidth={true}
+                        required
+                        {...params}
+                        label="Proveedor"
+                      />
+                    )}
+                  />
+                )}
               </Grid>
+              {hasError.error ? (
+                <Grid item>
+                  <br />
+                  <Alert sx={{ maxWidth: "250px" }} severity="error">
+                    {hasError?.msg}
+                  </Alert>
+                </Grid>
+              ) : null}
               <Grid item lg={12}>
                 <Grid
                   container
@@ -220,9 +251,16 @@ function AddEntryModal(props) {
                   <Grid item>
                     <LoadingButton
                       type="submit"
-                      loading={isLoading}
+                      loading={isSaving}
                       size="large"
                       variant="contained"
+                      disabled={
+                        !productsList ||
+                        productsList.length === 0 ||
+                        !suppliersList ||
+                        suppliersList.length === 0 ||
+                        !selectedDate
+                      }
                     >
                       Guardar
                     </LoadingButton>

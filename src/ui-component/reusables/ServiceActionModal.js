@@ -6,21 +6,43 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { LoadingButton } from "@mui/lab";
-import { TextField } from "@mui/material";
+import { Alert, TextField } from "@mui/material";
 import { useState } from "react";
+import { updateService } from "client/api/services";
 
 export default function ServiceActionModal({
+  serviceId,
   open,
   title,
   text,
-  isLoading,
   requiredInput,
   inputLabel,
-  onAccept,
-  onCancel,
+  onClose,
+  onSuccess,
   type,
 }) {
+  const STATUS = {
+    DONE: "COMPLETED",
+    CANCEL: "CANCELED",
+  };
   const [inputValue, setInputValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasError, setHasError] = useState({ error: false, msg: "" });
+  const handleSubmit = async () => {
+    setIsSaving(true);
+    setHasError({ error: false, msg: "" });
+    const result = await updateService({
+      id: serviceId,
+      status: STATUS[type],
+      comments: inputValue,
+    });
+    setIsSaving(false);
+    if (!result.error) {
+      onSuccess(true, result.msg);
+    } else {
+      setHasError({ error: true, msg: result.msg });
+    }
+  };
   return (
     <div>
       <Dialog
@@ -50,19 +72,25 @@ export default function ServiceActionModal({
             autoFocus
             fullWidth={true}
           />
+
+          {hasError.error && (
+            <Alert severity="error" sx={{ marginTop: 2 }}>
+              {hasError.msg}
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions>
-          {!isLoading && (
-            <Button variant="outlined" onClick={onCancel}>
+          {!isSaving && (
+            <Button variant="outlined" onClick={onClose}>
               Cancelar
             </Button>
           )}
           <LoadingButton
             disabled={requiredInput && inputValue.trim().length <= 0}
-            loading={isLoading}
+            loading={isSaving}
             color={type === "DONE" ? "success" : "error"}
             variant="contained"
-            onClick={requiredInput ? () => onAccept(inputValue) : onAccept}
+            onClick={handleSubmit}
           >
             Continuar
           </LoadingButton>

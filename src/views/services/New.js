@@ -74,7 +74,6 @@ function New() {
     if (value?.toString() === "Invalid Date") {
       value = null;
     }
-
     setSelectedDate(value);
   };
   const handleBack = () => {
