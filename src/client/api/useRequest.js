@@ -31,6 +31,19 @@ export const getFetcher = async (url) => {
   await errorHandler(res);
   return res.json();
 };
+// Summary
+export const useGetSummary = (url, fetcher, noRefresh = false) => {
+  const { data, error, isLoading } = useSWR(
+    url,
+    fetcher,
+    noRefresh ? noRefreshOptions : {}
+  );
+  return {
+    data: data?.data,
+    error,
+    isLoading,
+  };
+};
 // Customers
 export const useGetCustomerTypes = (fetcher, noRefresh = false) => {
   const { data, error, isLoading } = useSWR(

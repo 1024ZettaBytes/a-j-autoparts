@@ -26,3 +26,7 @@ export const API_ROUTES = {
   ALL_SUPPLIERS_NO_DETAIL_API: `${API_URL}/suppliers?nondetail=true`,
   // Service Reminders
   ALL_SERVICE_REMINDERS_API: `${API_URL}/service-reminders`,
+  // Summary
+  SUMMARY_ACTIVE_SERVICES_API: `${API_URL}/summary/activeServices`,
+  SUMMARY_REMINDERS_API: `${API_URL}/summary/reminders`,
+  SUMMARY_INVENTORY_API: `${API_URL}/summary/inventory`,

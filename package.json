@@ -1,5 +1,5 @@
 {
-  "name": "aj-autoparts",
+  "name": "aj-autoparts-lube-center",
   "version": "3.4.2",
   "private": true,
   "main": "electron/main.js",
@@ -7,8 +7,8 @@
   "ahutor": "Eduardo Ramírez",
   "description": "Taller app",
   "build": {
-    "productName": "A&J-AUTOPARTS",
-    "appId": "com.pinesoft.aj.autoparts",
+    "productName": "A&J-AUTOPARTS - Lube Center",
+    "appId": "com.pinesoft.aj.autoparts.lubecenter",
     "files": [
       "build/**/*",
       "node_modules/**/*",

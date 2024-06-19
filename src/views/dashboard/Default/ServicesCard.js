@@ -1,47 +1,32 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
 
 // material-ui
-import { useTheme } from "@mui/material/styles";
+
 import {
-  Avatar,
   Button,
   CardActions,
   CardContent,
   Divider,
   Grid,
-  Menu,
-  MenuItem,
   Typography,
 } from "@mui/material";
 
 // project imports
-import BajajAreaChartCard from "./BajajAreaChartCard";
 import MainCard from "ui-component/cards/MainCard";
 import SkeletonPopularCard from "ui-component/cards/Skeleton/PopularCard";
 import { gridSpacing } from "store/constant";
 
 // assets
 import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
-import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
-import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
-import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import {
+  FORMAT_OPTIONS,
+  formatDate,
+  getDatesDaysDifference,
+} from "client/utils/dateUtils";
+import { useNavigate } from "react-router";
 
-// ==============================|| DASHBOARD DEFAULT - POPULAR CARD ||============================== //
-
-const ServicesCard = ({ title, isLoading }) => {
-  const theme = useTheme();
-
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
+const ServicesCard = ({ title, isLoading, list }) => {
+  const navigate = useNavigate();
   return (
     <>
       {isLoading ? (
@@ -63,88 +48,84 @@ const ServicesCard = ({ title, isLoading }) => {
               </Grid>
 
               <Grid item xs={12}>
-                <Grid container direction="column">
-                  <Grid item>
-                    <Grid
-                      container
-                      alignItems="center"
-                      justifyContent="space-between"
-                    >
-                      <Grid item>
-                        <Typography variant="subtitle1" color="inherit">
-                          Accord 2001 - Jesús
-                        </Typography>
-                      </Grid>
-                      <Grid item>
-                        <Grid
-                          container
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
+                {list.length > 0 ? (
+                  list.map((service) => {
+                    const { model, year } =
+                      service.vehicle_service_vehicleTovehicle?.vehicles_db;
+                    const days = getDatesDaysDifference(
+                      service.startDate,
+                      new Date()
+                    );
+                    const subColor = days < 7 ? "success" : "error";
+                    return (
+                      <div key={`service-${service.id}`}>
+                        <Grid container direction="column">
                           <Grid item>
-                            <Typography variant="subtitle1" color="inherit">
-                              30/04/2024{" "}
+                            <Grid
+                              container
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Grid item>
+                                <Typography variant="subtitle1" color="inherit">
+                                  {`${model} - ${year}`}
+                                </Typography>
+                              </Grid>
+                              <Grid item>
+                                <Grid
+                                  container
+                                  alignItems="center"
+                                  justifyContent="space-between"
+                                >
+                                  <Grid item>
+                                    <Typography
+                                      variant="subtitle1"
+                                      color="inherit"
+                                    >
+                                      {formatDate(
+                                        service.startDate,
+                                        FORMAT_OPTIONS.DDMMYYYY
+                                      )}
+                                    </Typography>
+                                  </Grid>
+                                </Grid>
+                              </Grid>
+                            </Grid>
+                          </Grid>
+                          <Grid item>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ color: `${subColor}.dark` }}
+                            >
+                              {`${days} día(s)`}
                             </Typography>
                           </Grid>
                         </Grid>
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                  <Grid item>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ color: "success.dark" }}
-                    >
-                      0 días{" "}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Divider sx={{ my: 1.5 }} />
-
-                <Grid item xs={12}>
-                  <Grid container direction="column">
-                    <Grid item>
-                      <Grid
-                        container
-                        alignItems="center"
-                        justifyContent="space-between"
-                      >
-                        <Grid item>
-                          <Typography variant="subtitle1" color="inherit">
-                            Sentra 2023 - Eduardo
-                          </Typography>
-                        </Grid>
-                        <Grid item>
-                          <Grid
-                            container
-                            alignItems="center"
-                            justifyContent="space-between"
-                          >
-                            <Grid item>
-                              <Typography variant="subtitle1" color="inherit">
-                                27/04/2024{" "}
-                              </Typography>
-                            </Grid>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                    <Grid item>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ color: "error.dark" }}
-                      >
-                        3 días{" "}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  <Divider sx={{ my: 1.5 }} />
-                </Grid>
+                        <Divider sx={{ my: 1.5 }} />
+                      </div>
+                    );
+                  })
+                ) : (
+                  <Typography
+                    align="center"
+                    color="grey"
+                    marginTop={2}
+                    fontStyle="italic"
+                  >
+                    No hay servicios activos
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </CardContent>
           <CardActions sx={{ p: 1.25, pt: 0, justifyContent: "center" }}>
-            <Button size="small" disableElevation>
+            <Button
+              onClick={() => {
+                navigate(`/services`);
+              }}
+              size="small"
+              disableElevation
+            >
               Ver todos
               <ChevronRightOutlinedIcon />
             </Button>
