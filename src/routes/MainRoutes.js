@@ -3,7 +3,6 @@ import { lazy } from "react";
 // project imports
 import MainLayout from "layout/MainLayout";
 import Loadable from "ui-component/Loadable";
-import { element } from "prop-types";
 
 // dashboard routing
 const DashboardDefault = Loadable(

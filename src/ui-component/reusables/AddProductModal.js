@@ -15,7 +15,7 @@ import {
 import { LoadingButton } from "@mui/lab";
 import { saveProduct } from "client/api/inventory";
 function AddProductModal(props) {
-  const { handleOnClose, open, serviceId } = props;
+  const { handleOnClose, open } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState({ error: false, msg: "" });
 

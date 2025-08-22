@@ -57,6 +57,14 @@ export const getStatusLabel = (status) => {
           size="small"
         ></Chip>
       );
+    default:
+      return (
+        <Chip
+          label="Desconocido"
+          color="default"
+          size="small"
+        ></Chip>
+      );
   }
 };
 export default function ServicesTable({

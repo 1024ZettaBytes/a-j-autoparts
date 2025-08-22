@@ -268,6 +268,7 @@ export default function ByServiceId() {
                               height="200px"
                               key={`att-${attachment.id}`}
                               src={attachment.url}
+                              alt={`Foto adjunta ${attachment.id}`}
                             />
                           </Grid>
                         )

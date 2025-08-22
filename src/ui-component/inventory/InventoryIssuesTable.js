@@ -15,19 +15,15 @@ import {
   CircularProgress,
   Divider,
   Grid,
-  IconButton,
   InputAdornment,
   TablePagination,
   TextField,
-  Tooltip,
   Typography,
   useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import NotificationImportantOutlinedIcon from "@mui/icons-material/NotificationImportantOutlined";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Link } from "react-router-dom";
 import { getFetcher, useGetAllProductIssues } from "client/api/useRequest";
 
 export const getStockLabel = (stock, min) => {
