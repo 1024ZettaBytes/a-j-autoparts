@@ -1,5 +1,4 @@
-import { API_URL } from "../../localConst";
-
+const API_URL = "https://aj-autoparts-server-test.up.railway.app/api"
 export const API_ROUTES = {
   // Customers
   ALL_CUSTOMERS_API: `${API_URL}/customers`,
@@ -30,3 +29,4 @@ export const API_ROUTES = {
   SUMMARY_ACTIVE_SERVICES_API: `${API_URL}/summary/activeServices`,
   SUMMARY_REMINDERS_API: `${API_URL}/summary/reminders`,
   SUMMARY_INVENTORY_API: `${API_URL}/summary/inventory`,
+}
