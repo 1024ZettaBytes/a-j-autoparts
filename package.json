@@ -54,6 +54,8 @@
     "yup": "^1.4.0"
   },
   "scripts": {
+    "build-env": "react-scripts build",
+    "start-env": "react-scripts start",
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
